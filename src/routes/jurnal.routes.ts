@@ -1,14 +1,17 @@
 import { Router } from "express";
-import { jurnalController } from "../controllers";
-import { validasiJurnal } from "../middlewares/validasi.middleware";
+import {
+  getSemuaJurnal, getJurnalById, buatJurnal,
+  updateJurnal, updateStatusReview, hapusJurnal,
+} from "../controllers/jurnal.controller";
+import { validasiBodyWajib } from "../middlewares/validasi.middleware";
 import { cekApiKey } from "../middlewares/auth.middleware";
 
 const router = Router();
-
-router.get("/", jurnalController.getSemuaJurnal);
-router.get("/:id", jurnalController.getJurnalById);
-router.post("/", validasiJurnal, jurnalController.buatJurnal);
-router.put("/:id", validasiJurnal, jurnalController.updateJurnal);
-router.delete("/:id", cekApiKey, jurnalController.hapusJurnal);
+router.get("/", getSemuaJurnal);
+router.get("/:id", getJurnalById);
+router.post("/", validasiBodyWajib(["pesertaId", "tanggal", "kegiatan"]), buatJurnal);
+router.put("/:id", validasiBodyWajib(["pesertaId", "tanggal", "kegiatan"]), updateJurnal);
+router.patch("/:id/review", updateStatusReview);
+router.delete("/:id", cekApiKey, hapusJurnal);
 
 export default router;

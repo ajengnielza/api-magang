@@ -1,2 +1,3 @@
-export * as pesertaController from "./peserta.controller";
-export * as jurnalController from "./jurnal.controller";
+export * from "./peserta.controller";
+export * from "./jurnal.controller";
+export * from "./stats.controller";

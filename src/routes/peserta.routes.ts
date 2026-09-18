@@ -1,16 +1,17 @@
 import { Router } from "express";
-import { pesertaController } from "../controllers";
-import { validasiPeserta } from "../middlewares/validasi.middleware";
+import {
+  getSemuaPeserta, getPesertaById, getJurnalByPesertaId,
+  buatPeserta, updatePeserta, hapusPeserta,
+} from "../controllers/peserta.controller";
+import { validasiBodyWajib } from "../middlewares/validasi.middleware";
 import { cekApiKey } from "../middlewares/auth.middleware";
 
 const router = Router();
-
-router.get("/", pesertaController.getSemuaPeserta);
-router.get("/:id", pesertaController.getPesertaById);
-router.get("/:id/jurnal", pesertaController.getJurnalByPesertaId);
-
-router.post("/", validasiPeserta, pesertaController.buatPeserta);
-router.put("/:id", validasiPeserta, pesertaController.updatePeserta);
-router.delete("/:id", cekApiKey, pesertaController.hapusPeserta);
+router.get("/", getSemuaPeserta);
+router.get("/:id", getPesertaById);
+router.get("/:id/jurnal", getJurnalByPesertaId);
+router.post("/", validasiBodyWajib(["nama", "sekolah"]), buatPeserta);
+router.put("/:id", validasiBodyWajib(["nama", "sekolah"]), updatePeserta);
+router.delete("/:id", cekApiKey, hapusPeserta);
 
 export default router;

@@ -1,90 +1,38 @@
 import { Request, Response } from "express";
-import { dataPeserta } from "../data/dummy";
-import { dataJurnal } from "../data/dummy"; 
+import { pesertaService } from "../services/peserta.service";
+import { asyncHandler, sukses, suksesDenganTotal, dibuat } from "../utils";
 
-export const getSemuaPeserta = (req: Request, res: Response): void => {
+export const getSemuaPeserta = asyncHandler((req: Request, res: Response) => {
   const { sekolah, fase, limit } = req.query;
-  let hasil = dataPeserta;
+  const hasil = pesertaService.getAll({
+    sekolah: sekolah as string | undefined,
+    fase: fase as string | undefined,
+    limit: limit as string | undefined,
+  });
+  suksesDenganTotal(res, hasil);
+});
 
-  if (sekolah) {
-    hasil = hasil.filter((p) => p.sekolah.includes(String(sekolah)));
-  }
-  if (fase) {
-    hasil = hasil.filter((p) => p.fase === Number(fase));
-  }
-  if (limit) {
-    hasil = hasil.slice(0, Number(limit));
-  }
+export const getPesertaById = asyncHandler((req: Request, res: Response) => {
+  const peserta = pesertaService.getById(Number(req.params.id));
+  sukses(res, peserta);
+});
 
-  res.json({ total: hasil.length, data: hasil });
-};
+export const getJurnalByPesertaId = asyncHandler((req: Request, res: Response) => {
+  const hasil = pesertaService.getJurnalMilikPeserta(Number(req.params.id));
+  sukses(res, hasil);
+});
 
-export const getPesertaById = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-  const peserta = dataPeserta.find((p) => p.id === id);
+export const buatPeserta = asyncHandler((req: Request, res: Response) => {
+  const baru = pesertaService.create(req.body);
+  dibuat(res, baru);
+});
 
-  if (!peserta) {
-    res.status(404).json({ error: `Peserta dengan id ${id} tidak ditemukan` });
-    return; 
-  }
+export const updatePeserta = asyncHandler((req: Request, res: Response) => {
+  const updated = pesertaService.update(Number(req.params.id), req.body);
+  sukses(res, updated, "Peserta berhasil diperbarui");
+});
 
-  res.json(peserta);
-};
-
-export const getJurnalByPesertaId = (req: Request, res: Response): void => {
-  const pesertaId = Number(req.params.id);
-
-  const peserta = dataPeserta.find((p) => p.id === pesertaId);
-  if (!peserta) {
-    res.status(404).json({ error: `Peserta dengan id ${pesertaId} tidak ditemukan` });
-    return;
-  }
-
-  const hasil = dataJurnal.filter((j) => j.pesertaId === pesertaId);
-
-  res.json({ pesertaId, nama: peserta.nama, total: hasil.length, data: hasil });
-};
-
-export const buatPeserta = (req: Request, res: Response): void => {
-  const { nama, sekolah, fase } = req.body;
-
-  if (!nama || !sekolah) {
-    res.status(400).json({ error: "nama dan sekolah wajib diisi" });
-    return;
-  }
-
-  const baru = {
-    id: dataPeserta.length + 1,
-    nama,
-    sekolah,
-    fase: Number(fase) || 1,
-  };
-  dataPeserta.push(baru);
-  res.status(201).json(baru);
-};
-
-export const updatePeserta = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-  const index = dataPeserta.findIndex((p) => p.id === id);
-
-  if (index === -1) {
-    res.status(404).json({ error: `Peserta dengan id ${id} tidak ditemukan` });
-    return;
-  }
-
-  dataPeserta[index] = { ...dataPeserta[index], ...req.body };
-  res.json(dataPeserta[index]);
-};
-
-export const hapusPeserta = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-  const index = dataPeserta.findIndex((p) => p.id === id);
-
-  if (index === -1) {
-    res.status(404).json({ error: `Peserta dengan id ${id} tidak ditemukan` });
-    return;
-  }
-
-  dataPeserta.splice(index, 1);
+export const hapusPeserta = asyncHandler((req: Request, res: Response) => {
+  pesertaService.delete(Number(req.params.id));
   res.status(204).send();
-};
+});

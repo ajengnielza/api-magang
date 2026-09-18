@@ -1,17 +1,15 @@
 import { Request, Response, NextFunction } from "express";
+import { config } from "../config/env.config";
+import { UnauthorizedError, ForbiddenError } from "../utils";
 
-export function cekApiKey(req: Request, res: Response, next: NextFunction): void {
+export function cekApiKey(req: Request, _res: Response, next: NextFunction): void {
   const apiKey = req.headers["x-api-key"];
 
   if (!apiKey) {
-    res.status(401).json({ error: "API key tidak ditemukan" });
-    return;
+    throw new UnauthorizedError("API key tidak ditemukan");
   }
-
-  if (apiKey !== process.env.API_KEY) {
-    res.status(403).json({ error: "API key tidak valid" });
-    return;
+  if (apiKey !== config.security.apiKey) {
+    throw new ForbiddenError("API key tidak valid");
   }
-
   next();
 }
