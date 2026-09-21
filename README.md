@@ -1,6 +1,6 @@
 # API Magang Batch 4
 
-API sederhana untuk mencatat Peserta magang dan Jurnal kegiatan harian mereka. Data masih in-memory (hilang saat server direstart) — siap disambung ke database sungguhan minggu depan, karena akses data sudah dipisah lewat `repositories/`.
+API sederhana untuk mencatat Peserta magang dan Jurnal kegiatan harian mereka. Data masih in-memory (hilang saat server direstart) — dibangun dengan Express + TypeScript, terhubung ke database PostgreSQL lewat TypeORM.
 
 ## Menjalankan
 
