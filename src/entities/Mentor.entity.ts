@@ -1,0 +1,17 @@
+
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+
+@Entity("mentor")
+export class Mentor {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ type: "varchar", length: 100 })
+  nama!: string;
+
+  @Column({ type: "varchar", length: 100, unique: true })
+  email!: string;
+
+  @Column({ type: "jsonb" })
+  keahlian!: string[];
+}
