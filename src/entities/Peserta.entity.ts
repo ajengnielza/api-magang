@@ -22,6 +22,9 @@ export class Peserta {
 
   @Column({ type: "enum", enum: ["aktif", "lulus", "berhenti"], default: "aktif" })
   status!: StatusPeserta;
+ 
+  @Column({ type: "varchar", nullable: true })
+  telepon?: string;
 
   @CreateDateColumn()
   createdAt!: Date;

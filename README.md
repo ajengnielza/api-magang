@@ -95,3 +95,16 @@ Beberapa alasan kenapa saya lebih memilih pakai ORM daripada nulis SQL sendiri:
 - **Kode jadi lebih banyak dan berulang** — tiap mau tambah, ambil, ubah, atau hapus data, saya harus nulis query manual satu-satu. Kalau pakai ORM, tinggal pakai fungsi yang udah disediakan kayak `.find()`, `.save()`, `.delete()`.
 
 Intinya, ORM bikin saya bisa fokus ke logika aplikasi pakai bahasa yang udah familiar (TypeScript), tanpa harus pusing mikirin SQL dan keamanannya setiap saat.
+
+Fungsi Tabel migrations
+
+Tabel migrations digunakan oleh TypeORM untuk mencatat migration yang sudah dijalankan pada database. Setiap kali kita menjalankan migration:run, TypeORM akan menyimpan nama dan waktu migration tersebut ke tabel ini.
+
+Gunanya:
+
+Mengetahui migration mana yang sudah dijalankan.
+Mencegah migration yang sama dijalankan berulang kali.
+Jika ada migration baru, TypeORM akan menjalankannya karena belum tercatat di tabel.
+Saat menggunakan migration:revert, TypeORM akan membatalkan migration terakhir dan menghapus catatannya dari tabel.
+
+Jadi, sederhananya tabel migrations seperti catatan riwayat perubahan database, sehingga TypeORM tahu perubahan mana yang sudah dilakukan dan mana yang belum.
