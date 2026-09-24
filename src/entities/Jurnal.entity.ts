@@ -1,5 +1,6 @@
-
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Peserta } from "./Peserta.entity";
+import { Mentor } from "./Mentor.entity";
 
 export type StatusReview = "belum" | "sudah";
 
@@ -8,8 +9,19 @@ export class JurnalHarian {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "int" })
+  @ManyToOne(() => Peserta, (peserta) => peserta.jurnalList)
+  @JoinColumn({ name: "peserta_id" })
+  peserta!: Peserta;
+
+  @Column({ name: "peserta_id" })
   pesertaId!: number;
+
+  @ManyToOne(() => Mentor, (mentor) => mentor.jurnalDireview, { nullable: true })
+  @JoinColumn({ name: "reviewer_id" })
+  reviewer?: Mentor;
+
+  @Column({ name: "reviewer_id", nullable: true })
+  reviewerId?: number;
 
   @Column({ type: "text" })
   kegiatan!: string;
