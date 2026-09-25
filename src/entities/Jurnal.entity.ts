@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { Peserta } from "./Peserta.entity";
 import { Mentor } from "./Mentor.entity";
 
-export type StatusReview = "belum" | "sudah";
+export type StatusReview = "belum" | "disetujui" | "revisi";
 
 @Entity("jurnal_harian")
 export class JurnalHarian {
@@ -32,7 +32,7 @@ export class JurnalHarian {
   @Column({ type: "varchar", nullable: true })
   linkCommit?: string;
 
-  @Column({ type: "enum", enum: ["belum", "sudah"], default: "belum" })
+  @Column({ type: "enum", enum: ["belum", "disetujui", "revisi"], default: "belum" })
   statusReview!: StatusReview;
 
   @CreateDateColumn()

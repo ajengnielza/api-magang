@@ -1,18 +1,43 @@
-import { BaseRepository } from "./base.repository";
-import { Peserta } from "../types/peserta.types";
-import { dataPeserta } from "../data/dummy";
 
-class PesertaRepository extends BaseRepository<Peserta> {
-  constructor() {
-    super();
-    this.seed(dataPeserta);
-  }
-  findBySekolah(sekolah: string): Peserta[] {
-    return this.data.filter((p) => p.sekolah.toLowerCase().includes(sekolah.toLowerCase()));
-  }
-  findByFase(fase: number): Peserta[] {
-    return this.data.filter((p) => p.fase === fase);
-  }
-}
+import { AppDataSource } from "../config/database.config";
+import { Peserta } from "../entities/Peserta.entity";
 
-export const pesertaRepository = new PesertaRepository();
+const repo = AppDataSource.getRepository(Peserta);
+
+export const pesertaRepository = {
+  async findAll(): Promise<Peserta[]> {
+    return repo.find();
+  },
+
+  async findById(id: number): Promise<Peserta | null> {
+    return repo.findOneBy({ id });
+  },
+
+  async findBySekolah(sekolah: string): Promise<Peserta[]> {
+    return repo
+      .createQueryBuilder("p")
+      .where("p.sekolah ILIKE :sekolah", { sekolah: `%${sekolah}%` })
+      .getMany();
+  },
+
+  async findByFase(fase: number): Promise<Peserta[]> {
+    return repo.find({ where: { fase } });
+  },
+
+  async create(payload: Partial<Peserta>): Promise<Peserta> {
+    const item = repo.create(payload);
+    return repo.save(item);
+  },
+
+  async update(id: number, payload: Partial<Peserta>): Promise<Peserta | undefined> {
+    const existing = await repo.findOneBy({ id });
+    if (!existing) return undefined;
+    await repo.update({ id }, payload);
+    return { ...existing, ...payload };
+  },
+
+  async delete(id: number): Promise<boolean> {
+    const result = await repo.delete({ id });
+    return (result.affected ?? 0) > 0;
+  },
+};

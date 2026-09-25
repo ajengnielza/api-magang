@@ -3,14 +3,14 @@ import {
   getSemuaJurnal, getJurnalById, buatJurnal,
   updateJurnal, updateStatusReview, hapusJurnal,
 } from "../controllers/jurnal.controller";
-import { validasiBodyWajib } from "../middlewares/validasi.middleware";
+import { validasiJurnal } from "../middlewares/validasi.middleware";
 import { cekApiKey } from "../middlewares/auth.middleware";
 
 const router = Router();
 router.get("/", getSemuaJurnal);
 router.get("/:id", getJurnalById);
-router.post("/", validasiBodyWajib(["pesertaId", "tanggal", "kegiatan"]), buatJurnal);
-router.put("/:id", validasiBodyWajib(["pesertaId", "tanggal", "kegiatan"]), updateJurnal);
+router.post("/", validasiJurnal, buatJurnal);
+router.put("/:id", validasiJurnal, updateJurnal);
 router.patch("/:id/review", updateStatusReview);
 router.delete("/:id", cekApiKey, hapusJurnal);
 
