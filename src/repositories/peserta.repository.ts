@@ -40,4 +40,8 @@ export const pesertaRepository = {
     const result = await repo.delete({ id });
     return (result.affected ?? 0) > 0;
   },
+
+  async findByEmail(email: string): Promise<Peserta | null> {
+  return repo.findOneBy({ email });
+},
 };

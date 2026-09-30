@@ -30,6 +30,12 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class ConflictError extends AppError {
+  constructor(message: string = "Data sudah ada") {
+    super(message, 409);
+  }
+}
+
 export class ForbiddenError extends AppError {
   constructor(message: string = "Akses ditolak") {
     super(message, 403);
