@@ -1,6 +1,5 @@
-
 import { pesertaRepository } from "../repositories/peserta.repository";
-import { NotFoundError, ValidationError } from "../utils";
+import { NotFoundError, ValidationError, ForbiddenError } from "../utils";
 import { AppDataSource } from "../config/database.config";
 import { Peserta } from "../entities/Peserta.entity";
 
@@ -44,14 +43,24 @@ export const pesertaService = {
     });
   },
 
-  async update(id: number, payload: Partial<{ nama: string; sekolah: string; fase: number }>) {
+  async update(id: number, payload: Partial<{ nama: string; sekolah: string; fase: number }>, userId?: number) {
+    if (userId && id !== userId) {
+      throw new ForbiddenError("Kamu tidak bisa mengubah data peserta lain");
+    }
     const updated = await pesertaRepository.update(id, payload);
     if (!updated) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
     return updated;
   },
 
-  async delete(id: number) {
+  async delete(id: number, userId?: number) {
+    if (userId && id !== userId) {
+      throw new ForbiddenError("Kamu tidak bisa menghapus data peserta lain");
+    }
     const berhasil = await pesertaRepository.delete(id);
     if (!berhasil) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
+  },
+
+  async getProfilSaya(userId: number) {
+    return this.getById(userId);
   },
 };

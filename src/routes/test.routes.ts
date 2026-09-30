@@ -13,7 +13,7 @@ router.get("/not-found", asyncHandler(async () => {
 }));
 
 router.get("/validation", asyncHandler(async () => {
-  throw new ValidationError([
+  throw new ValidationError("Data tidak valid", [
     "nama wajib diisi",
     "email tidak valid",
     "umur harus angka",
