@@ -2,27 +2,25 @@ import { jurnalRepository } from "../repositories/jurnal.repository";
 import { pesertaRepository } from "../repositories/peserta.repository";
 import { StatusReview } from "../entities/Jurnal.entity";
 import { JurnalHarian } from "../entities/Jurnal.entity";
-import { NotFoundError, ValidationError } from "../utils";
+import { NotFoundError, UnauthorizedError, ValidationError } from "../utils";
 
 const MIN_PANJANG_KEGIATAN = 10;
 const STATUS_REVIEW_VALID: StatusReview[] = ["belum", "disetujui", "revisi"];
 
 export const jurnalService = {
-  async getAll(filter: { peserta?: string; status?: string }, userId?: number) {
-    let hasil: JurnalHarian[];
-
-    if (userId) {
-      hasil = await jurnalRepository.findByPeserta(userId);
-    } else if (filter.peserta?.trim()) {
-      hasil = await jurnalRepository.findByPeserta(Number(filter.peserta));
-    } else {
-      hasil = await jurnalRepository.findAll();
-    }
+  // Khusus mentor — lihat SEMUA jurnal, tanpa filter kepemilikan
+  async getAll(filter: { status?: string }) {
+    let hasil: JurnalHarian[] = await jurnalRepository.findAll();
 
     if (filter.status?.trim()) {
       hasil = hasil.filter((j) => j.statusReview === filter.status);
     }
     return hasil;
+  },
+
+  // Peserta & mentor — lihat jurnal milik sendiri
+  async getJurnalSaya(userId: number) {
+    return jurnalRepository.findByPeserta(userId);
   },
 
   async getById(id: number) {
@@ -51,7 +49,19 @@ export const jurnalService = {
     });
   },
 
-  async update(id: number, payload: Partial<{ kegiatan: string; hambatan: string; linkCommit: string }>) {
+  async update(
+    id: number,
+    payload: Partial<{ kegiatan: string; hambatan: string; linkCommit: string }>,
+    userId?: number,
+    userRole?: "peserta" | "mentor"
+  ) {
+    const jurnal = await jurnalRepository.findById(id);
+    if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
+
+    if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
+      throw new UnauthorizedError("Kamu tidak berhak mengubah jurnal ini");
+    }
+
     const updated = await jurnalRepository.update(id, payload);
     if (!updated) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
     return updated;
@@ -70,8 +80,4 @@ export const jurnalService = {
     const berhasil = await jurnalRepository.delete(id);
     if (!berhasil) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
   },
-
-  async getJurnalSaya(userId: number) {
-  return jurnalRepository.findByPeserta(userId);
-},
 };

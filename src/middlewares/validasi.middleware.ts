@@ -103,3 +103,21 @@ export function validasiLogin(req: Request, res: Response, next: NextFunction): 
 
   next();
 }
+
+export function validasiUpdateJurnal(req: Request, res: Response, next: NextFunction): void {
+  const { kegiatan } = req.body;
+  const errors: string[] = [];
+
+  if (kegiatan !== undefined) {
+    if (typeof kegiatan !== "string" || kegiatan.trim().length < 10) {
+      errors.push("Kegiatan minimal 10 karakter");
+    }
+  }
+
+  if (errors.length > 0) {
+    res.status(400).json({ error: "Validasi gagal", detail: errors });
+    return;
+  }
+
+  next();
+}

@@ -44,6 +44,9 @@ async function main() {
   const aman = tanpaPassword(peserta);
   console.log("Data aman (tanpa password):", aman);
 
+  const hashMentor = await hashPassword("mentor123");
+  console.log("Hash untuk mentor:", hashMentor);
+
   await AppDataSource.destroy();
 }
 

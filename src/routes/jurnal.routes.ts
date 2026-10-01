@@ -1,18 +1,26 @@
 import { Router } from "express";
 import {
-  getSemuaJurnal, getJurnalById, buatJurnal,
-  updateJurnal, updateStatusReview, hapusJurnal, getJurnalSaya
+  getSemuaJurnal, getJurnalById, getJurnalSaya, buatJurnal,
+  updateJurnal, updateStatusReview, hapusJurnal,
 } from "../controllers/jurnal.controller";
-import { validasiJurnal } from "../middlewares/validasi.middleware";
+import { validasiJurnal, validasiUpdateJurnal } from "../middlewares/validasi.middleware";
 import { authGuard } from "../middlewares/auth.middleware";
+import { requireRole } from "../middlewares/role.middleware";
 
 const router = Router();
-router.get("/", authGuard, getSemuaJurnal);   
+
+// Peserta & mentor (siapapun yang login) boleh buat jurnal & lihat milik sendiri
+router.post("/", authGuard, validasiJurnal, buatJurnal);
 router.get("/saya", authGuard, getJurnalSaya);
+
+// HANYA mentor yang boleh lihat SEMUA jurnal
+router.get("/", authGuard, requireRole("mentor"), getSemuaJurnal);
+
+// HANYA mentor yang boleh review
+router.patch("/:id/review", authGuard, requireRole("mentor"), updateStatusReview);
+
 router.get("/:id", getJurnalById);
-router.post("/", validasiJurnal, buatJurnal);
-router.put("/:id", validasiJurnal, updateJurnal);
-router.patch("/:id/review", updateStatusReview);
-router.delete("/:id", authGuard, hapusJurnal);  
+router.put("/:id", authGuard, validasiUpdateJurnal, updateJurnal);
+router.delete("/:id", authGuard, hapusJurnal);
 
 export default router;
