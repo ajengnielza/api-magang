@@ -24,6 +24,10 @@ API backend untuk sistem magang, dibangun dengan Express + TypeScript + TypeORM 
    DB_NAME=magang_db
    DB_USER=postgres
    DB_PASSWORD=your_password
+   JWT_SECRET=secret-untuk-access-token
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_SECRET=secret-berbeda-untuk-refresh-token
+   JWT_REFRESH_EXPIRES_IN=7d
    \`\`\`
 
 4. Buat database PostgreSQL
@@ -45,20 +49,102 @@ Server berjalan di `http://localhost:3000`
 
 ## Struktur Endpoint API
 
+### Autentikasi
+
+- `POST /api/auth/register` — daftar akun baru (role default: peserta)
+
+  Request body:
+  \`\`\`json
+  {
+    "nama": "Sakala Pratama",
+    "sekolah": "SMK Negeri 1",
+    "email": "sakala@test.com",
+    "password": "passwordAman123"
+  }
+  \`\`\`
+
+  Response 201:
+  \`\`\`json
+  {
+    "sukses": true,
+    "data": { "id": 1, "nama": "Sakala Pratama", "email": "sakala@test.com", "role": "peserta" }
+  }
+  \`\`\`
+
+- `POST /api/auth/login` — login, dapat access token & refresh token
+
+  Request body:
+  \`\`\`json
+  { "email": "sakala@test.com", "password": "passwordAman123" }
+  \`\`\`
+
+  Response 200:
+  \`\`\`json
+  {
+    "sukses": true,
+    "data": {
+      "accessToken": "eyJhbGc...",
+      "refreshToken": "eyJhbGc...",
+      "peserta": { "id": 1, "nama": "Budi Santoso", "role": "peserta" }
+    }
+  }
+  \`\`\`
+
+- `POST /api/auth/refresh` — tukar refresh token dengan access token baru (tanpa login ulang)
+
+  Request body:
+  \`\`\`json
+  { "refreshToken": "eyJhbGc..." }
+  \`\`\`
+
+  Response 200:
+  \`\`\`json
+  { "sukses": true, "data": { "accessToken": "eyJhbGc..." } }
+  \`\`\`
+
+- `POST /api/auth/logout` — hapus refresh token dari database (mencabut sesi)
+
+  Request body:
+  \`\`\`json
+  { "refreshToken": "eyJhbGc..." }
+  \`\`\`
+
+  Response 200:
+  \`\`\`json
+  { "sukses": true, "pesan": "Logout berhasil" }
+  \`\`\`
+
+**Cara pakai token:** sertakan access token di header pada endpoint yang butuh login:
+\`\`\`
+Authorization: Bearer <accessToken>
+\`\`\`
+
+**Masa berlaku token:**
+| Jenis | Durasi | Disimpan di |
+|---|---|---|
+| Access token | 15 menit | tidak disimpan di server, cukup JWT |
+| Refresh token | 7 hari | tabel `refresh_token`, bisa dicabut manual |
+
 ### Peserta
 - `GET /api/peserta` — daftar semua peserta (bisa difilter `?sekolah=` `&fase=` `&limit=`)
 - `GET /api/peserta/:id` — detail satu peserta
 - `GET /api/peserta/:id/jurnal` — jurnal milik satu peserta (pakai relasi TypeORM)
+- `GET /api/peserta/profil-saya` 🔒 — profil milik sendiri (butuh login)
 - `POST /api/peserta` — tambah peserta baru
-- `PUT /api/peserta/:id` — update peserta
-- `DELETE /api/peserta/:id` — hapus peserta
+- `PUT /api/peserta/:id` 🔒 — update peserta (hanya milik sendiri)
+- `DELETE /api/peserta/:id` 🔒👑 — hapus peserta (khusus mentor)
 
 ### Jurnal
-- `GET /api/jurnal` — daftar semua jurnal (bisa difilter `?peserta=` `&status=`)
+- `GET /api/jurnal` 🔒👑 — daftar semua jurnal, semua peserta (khusus mentor)
+- `GET /api/jurnal/saya` 🔒 — jurnal milik sendiri (peserta & mentor)
 - `GET /api/jurnal/:id` — detail satu jurnal
-- `POST /api/jurnal` — tambah jurnal baru
-- `PUT /api/jurnal/:id` — update jurnal
-- `DELETE /api/jurnal/:id` — hapus jurnal
+- `POST /api/jurnal` 🔒 — tambah jurnal baru
+- `PUT /api/jurnal/:id` 🔒 — update jurnal (hanya milik sendiri, kecuali mentor)
+- `PATCH /api/jurnal/:id/review` 🔒👑 — ubah status review (khusus mentor)
+- `DELETE /api/jurnal/:id` 🔒 — hapus jurnal
+
+> 🔒 = butuh login (header `Authorization: Bearer <accessToken>`)
+> 👑 = khusus role `mentor`
 
 ### Statistik
 - `GET /api/stats` — ringkasan statistik (total peserta, total jurnal, dll)
@@ -72,6 +158,16 @@ Server berjalan di `http://localhost:3000`
   - Peserta ↔ JurnalHarian (One-to-Many)
   - Peserta ↔ Skill (Many-to-Many, lewat tabel `peserta_skill`)
   - Mentor ↔ JurnalHarian (One-to-Many, sebagai reviewer)
+  - Peserta ↔ RefreshToken (One-to-Many, satu akun bisa punya banyak sesi aktif)
+
+## Autentikasi & Otorisasi
+
+- **Autentikasi:** JWT dengan dua jenis token (access & refresh), menggunakan secret berbeda untuk masing-masing (`JWT_SECRET` dan `JWT_REFRESH_SECRET`)
+- **Password:** di-hash dengan bcrypt, tidak pernah disimpan dalam bentuk asli
+- **Otorisasi:**
+  - `authGuard` — memverifikasi access token, mengisi `req.user`
+  - `requireRole("mentor")` — membatasi endpoint khusus role tertentu
+  - Ownership check — memastikan user hanya bisa mengubah data miliknya sendiri (kecuali mentor)
 
 ## Script Migration
 

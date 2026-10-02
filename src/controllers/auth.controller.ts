@@ -11,3 +11,15 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const data = await authService.login(req.body);
   sukses(res, data);
 });
+
+export const refresh = asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  const data = await authService.refresh(refreshToken);
+  sukses(res, data);
+});
+
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  await authService.logout(refreshToken);
+  sukses(res, null, "Logout berhasil");
+});
