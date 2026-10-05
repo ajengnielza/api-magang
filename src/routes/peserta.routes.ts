@@ -4,7 +4,6 @@ import {
   getSemuaPeserta,
   getPesertaById,
   getJurnalByPesertaId,
-  getProfilSaya,
   buatPeserta,
   updatePeserta,
   hapusPeserta,
@@ -24,13 +23,6 @@ router.post(
   buatPeserta
 );
 
-
-router.get(
-  "/profil-saya",
-  authGuard,
-  getProfilSaya
-);
-
 router.put(
   "/:id",
   authGuard,
@@ -43,7 +35,6 @@ router.delete(
   authGuard,
   hapusPeserta
 );
-
 
 router.get("/:id", getPesertaById);
 

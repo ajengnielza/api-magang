@@ -176,3 +176,18 @@ npm run migration:generate -- src/migrations/NamaMigration   # generate dari per
 npm run migration:run                                          # jalankan migration pending
 npm run migration:revert                                       # batalkan migration terakhir
 \`\`\`
+
+## Refleksi: Kenapa DELETE Harus Idempotent & GET Tidak Boleh Menghapus
+
+DELETE harus idempotent karena menghapus data yang sama berkali-kali seharusnya 
+tidak menimbulkan efek berbeda dari menghapusnya sekali — data tersebut sudah 
+tidak ada, jadi percobaan hapus berikutnya seharusnya tetap membawa sistem ke 
+kondisi akhir yang sama (data tidak ada), bukan menghasilkan error atau efek 
+samping tambahan.
+
+GET tidak boleh dipakai untuk menghapus data karena GET dianggap "safe" — 
+browser, crawler mesin pencari, dan fitur prefetch bebas memanggil GET kapan 
+saja tanpa ada tindakan eksplisit dari pengguna, dengan asumsi aksi itu tidak 
+mengubah apapun. Kalau penghapusan dilakukan lewat GET, data bisa terhapus 
+secara tidak sengaja hanya karena link-nya di-preview atau di-crawl, tanpa ada 
+manusia yang benar-benar bermaksud menghapus.

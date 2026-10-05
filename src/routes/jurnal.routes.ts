@@ -11,7 +11,6 @@ const router = Router();
 
 // Peserta & mentor (siapapun yang login) boleh buat jurnal & lihat milik sendiri
 router.post("/", authGuard, validasiJurnal, buatJurnal);
-router.get("/saya", authGuard, getJurnalSaya);
 
 // HANYA mentor yang boleh lihat SEMUA jurnal
 router.get("/", authGuard, requireRole("mentor"), getSemuaJurnal);
