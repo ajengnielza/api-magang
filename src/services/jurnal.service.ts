@@ -3,6 +3,7 @@ import { pesertaRepository } from "../repositories/peserta.repository";
 import { StatusReview } from "../entities/Jurnal.entity";
 import { JurnalHarian } from "../entities/Jurnal.entity";
 import { NotFoundError, UnauthorizedError, ValidationError } from "../utils";
+import { ListQuery } from "../utils/pagination";
 
 const MIN_PANJANG_KEGIATAN = 10;
 const STATUS_REVIEW_VALID: StatusReview[] = ["belum", "disetujui", "revisi"];
@@ -79,5 +80,9 @@ export const jurnalService = {
   async delete(id: number) {
     const berhasil = await jurnalRepository.delete(id);
     if (!berhasil) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
+  },
+
+  async daftarJurnal(lq: ListQuery, filter: { pesertaId?: number; statusReview?: string; from?: string; to?: string }) {
+    return jurnalRepository.findPaginated(lq, filter);
   },
 };

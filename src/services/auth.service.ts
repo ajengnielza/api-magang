@@ -38,7 +38,7 @@ export const authService = {
   },
 
   async login(data: LoginInput) {
-    const peserta = await pesertaRepository.findByEmail(data.email);
+    const peserta = await pesertaRepository.findByEmailDenganPassword(data.email);
 
     if (!peserta) {
       throw new UnauthorizedError("Email atau password salah");
@@ -64,7 +64,7 @@ export const authService = {
   },
 
   async refresh(refreshTokenInput: string) {
-    const payload = verifikasiRefreshToken(refreshTokenInput); // lempar error kalau invalid/expired
+    const payload = verifikasiRefreshToken(refreshTokenInput);
 
     const tersimpan = await refreshTokenRepository.findByToken(refreshTokenInput);
     if (!tersimpan) {

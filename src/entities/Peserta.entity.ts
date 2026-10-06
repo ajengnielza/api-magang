@@ -34,8 +34,8 @@ export class Peserta {
   @Column({ type: "varchar", nullable: true })
   telepon?: string;
 
-  @Column({ type: "varchar" })
-  password!: string;
+  @Column({ type: "varchar", select: false })
+password!: string;
 
   @Column({ type: "varchar", default: "peserta" })
   role!: "peserta" | "mentor";

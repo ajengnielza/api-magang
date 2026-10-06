@@ -1,27 +1,22 @@
 import { Request, Response } from "express";
-
 import { pesertaService } from "../services/peserta.service";
-
 import {
   asyncHandler,
   sukses,
   suksesDenganTotal,
-  dibuat,
+  dibuat, suksesDenganMeta
 } from "../utils";
+import { parseListQuery, buatMeta } from "../utils/pagination";
+import { SORT_PESERTA } from "../repositories/peserta.repository";
 
-export const getSemuaPeserta = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { sekolah, fase, limit } = req.query;
+export const getSemuaPeserta = asyncHandler(async (req: Request, res: Response) => {
+  const lq = parseListQuery(req.query, SORT_PESERTA);
+  const sekolah = typeof req.query.sekolah === "string" ? req.query.sekolah : undefined;
+  const fase = req.query.fase ? Number(req.query.fase) : undefined;
 
-    const hasil = await pesertaService.getAll({
-      sekolah: sekolah as string | undefined,
-      fase: fase as string | undefined,
-      limit: limit as string | undefined,
-    });
-
-    suksesDenganTotal(res, hasil);
-  }
-);
+  const { data, total } = await pesertaService.daftarPeserta(lq, { sekolah, fase });
+  suksesDenganMeta(res, data, buatMeta(lq.page, lq.limit, total));
+});
 
 export const getPesertaById = asyncHandler(
   async (req: Request, res: Response) => {

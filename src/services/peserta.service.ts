@@ -2,6 +2,7 @@ import { pesertaRepository } from "../repositories/peserta.repository";
 import { NotFoundError, ValidationError, ForbiddenError } from "../utils";
 import { AppDataSource } from "../config/database.config";
 import { Peserta } from "../entities/Peserta.entity";
+import { ListQuery } from "../utils/pagination";
 
 export const pesertaService = {
   async getAll(filter: { sekolah?: string; fase?: string; limit?: string }) {
@@ -62,5 +63,9 @@ export const pesertaService = {
 
   async getProfilSaya(userId: number) {
     return this.getById(userId);
+  },
+
+  async daftarPeserta(lq: ListQuery, filter: { sekolah?: string; fase?: number }) {
+    return pesertaRepository.findPaginated(lq, filter);
   },
 };

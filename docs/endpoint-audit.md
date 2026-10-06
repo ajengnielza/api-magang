@@ -39,3 +39,19 @@
 | h | POST /peserta dengan body JSON rusak | 400 Bad Request | |
 | i | POST /peserta dengan email format salah | 422 Unprocessable Entity | |
 | j | Database mati saat request masuk | 503 Service Unavailable | |
+
+## Uji Kasus Tepi — Pagination & Query
+
+| Input | Perilaku yang Diharapkan | Hasil Aktual |
+|---|---|---|
+| ?page=0 | Dianggap page=1 | ✅ 200, meta.page=1 |
+| ?page=-5 | Dianggap page=1 | ✅ 200, meta.page=1 |
+| ?page=abc | Dianggap page=1 | ✅ 200, meta.page=1 |
+| ?limit=1000 | Dipotong jadi 100 | ✅ 200, meta.limit=100 |
+| ?limit=0 | Dianggap limit=1 | ✅ 200, meta.limit=1 |
+| ?limit=abc | Dianggap limit=10 | ✅ 200, meta.limit=10 |
+| ?sortBy=password | Ditolak whitelist, fallback createdAt | ✅ 200, urutan sama dengan default |
+| ?sortBy=nama;DROP TABLE peserta | Ditolak whitelist, tabel tidak terhapus | ✅ 200, tabel peserta masih ada (dicek manual via psql) |
+| ?q=% | Di-escape jadi literal | ✅ 200, tidak mengembalikan semua data secara tidak wajar |
+| ?q=_ | Di-escape jadi literal | ✅ 200, hasil sesuai |
+| ?q= (kosong) | Dianggap tidak ada pencarian | ✅ 200, semua data tanpa filter |
