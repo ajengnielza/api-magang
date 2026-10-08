@@ -23,6 +23,9 @@ export const config = {
     refreshSecret: process.env.JWT_REFRESH_SECRET!,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   },
+  cors: {
+  origins: (process.env.CORS_ORIGINS || "http://localhost:5173").split(","),
+},
 };
 
 export const isProd = config.app.env === "production";

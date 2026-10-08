@@ -191,3 +191,10 @@ saja tanpa ada tindakan eksplisit dari pengguna, dengan asumsi aksi itu tidak
 mengubah apapun. Kalau penghapusan dilakukan lewat GET, data bisa terhapus 
 secara tidak sengaja hanya karena link-nya di-preview atau di-crawl, tanpa ada 
 manusia yang benar-benar bermaksud menghapus.
+
+## Cara Melacak Error Lewat Request ID
+
+1. Saat terjadi error, response selalu menyertakan `requestId` di body dan header `X-Request-Id`
+2. Salin nilai requestId tersebut
+3. Cari baris log server (format JSON) yang memiliki field `requestId` sama persis
+4. Baris log itu memuat detail lengkap: method, url, status, kode error, dan stack trace
