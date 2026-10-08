@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { config } from "../config/env.config";
 import { verifikasiToken, JwtPayload } from "../utils/jwt";
-import { UnauthorizedError, ForbiddenError } from "../utils";
+import { UnauthorizedError } from "../utils";
 
 declare global {
   namespace Express {
@@ -20,11 +19,7 @@ export function authGuard(req: Request, res: Response, next: NextFunction): void
 
   const token = authHeader.split(" ")[1];
 
-  try {
-    const payload = verifikasiToken(token);
-    req.user = payload;
-    next();
-  } catch (err) {
-    throw new UnauthorizedError("Token tidak valid atau sudah kedaluwarsa");
-  }
+  const payload = verifikasiToken(token);
+  req.user = payload;
+  next();
 }

@@ -1,43 +1,50 @@
-export class AppError extends Error {
-  public statusCode: number;
-  public isOperational: boolean;
+import { ErrorCode } from "./errorCodes";
 
-  constructor(message: string, statusCode: number = 400) {
+export interface FieldError {
+  field: string;
+  pesan: string;
+}
+
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number = 500,
+    public readonly kode: ErrorCode = ErrorCode.INTERNAL_ERROR,
+    public readonly detail?: unknown
+  ) {
     super(message);
-    this.statusCode = statusCode;
-    this.isOperational = true;
-    Object.setPrototypeOf(this, AppError.prototype);
+    this.name = new.target.name;
+    Object.setPrototypeOf(this, new.target.prototype);
+    Error.captureStackTrace(this, new.target);
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message: string = "Data tidak ditemukan") {
-    super(message, 404);
+  constructor(resource: string = "Data") {
+    super(`${resource} tidak ditemukan`, 404, ErrorCode.NOT_FOUND);
   }
 }
 
 export class ValidationError extends AppError {
-  public detail?: unknown;
-  constructor(message: string = "Data tidak valid", detail?: unknown) {
-    super(message, 400);
-    this.detail = detail;
+  constructor(detail: FieldError[]) {
+    super("Validasi gagal", 422, ErrorCode.VALIDATION_ERROR, detail);
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message: string = "Tidak diizinkan") {
-    super(message, 401);
-  }
-}
-
-export class ConflictError extends AppError {
-  constructor(message: string = "Data sudah ada") {
-    super(message, 409);
+  constructor(pesan: string = "Silakan login terlebih dahulu") {
+    super(pesan, 401, ErrorCode.UNAUTHORIZED);
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message: string = "Akses ditolak") {
-    super(message, 403);
+  constructor(pesan: string = "Kamu tidak berhak melakukan aksi ini") {
+    super(pesan, 403, ErrorCode.FORBIDDEN);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(pesan: string) {
+    super(pesan, 409, ErrorCode.CONFLICT);
   }
 }

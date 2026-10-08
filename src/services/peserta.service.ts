@@ -1,5 +1,5 @@
 import { pesertaRepository } from "../repositories/peserta.repository";
-import { NotFoundError, ValidationError, ForbiddenError } from "../utils";
+import { NotFoundError, ValidationError, ForbiddenError, FieldError } from "../utils";
 import { AppDataSource } from "../config/database.config";
 import { Peserta } from "../entities/Peserta.entity";
 import { ListQuery } from "../utils/pagination";
@@ -33,9 +33,14 @@ export const pesertaService = {
   },
 
   async create(payload: { nama: string; sekolah: string; email: string; fase?: number }) {
-    if (!payload.nama || !payload.sekolah) {
-      throw new ValidationError("nama dan sekolah wajib diisi");
+    const errors: FieldError[] = [];
+    if (!payload.nama) errors.push({ field: "nama", pesan: "Nama wajib diisi" });
+    if (!payload.sekolah) errors.push({ field: "sekolah", pesan: "Sekolah wajib diisi" });
+
+    if (errors.length > 0) {
+      throw new ValidationError(errors);
     }
+
     return pesertaRepository.create({
       nama: payload.nama,
       sekolah: payload.sekolah,

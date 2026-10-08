@@ -2,14 +2,13 @@ import { jurnalRepository } from "../repositories/jurnal.repository";
 import { pesertaRepository } from "../repositories/peserta.repository";
 import { StatusReview } from "../entities/Jurnal.entity";
 import { JurnalHarian } from "../entities/Jurnal.entity";
-import { NotFoundError, UnauthorizedError, ValidationError } from "../utils";
+import { NotFoundError, ForbiddenError, ValidationError, FieldError } from "../utils";
 import { ListQuery } from "../utils/pagination";
 
 const MIN_PANJANG_KEGIATAN = 10;
 const STATUS_REVIEW_VALID: StatusReview[] = ["belum", "disetujui", "revisi"];
 
 export const jurnalService = {
-  // Khusus mentor — lihat SEMUA jurnal, tanpa filter kepemilikan
   async getAll(filter: { status?: string }) {
     let hasil: JurnalHarian[] = await jurnalRepository.findAll();
 
@@ -19,7 +18,6 @@ export const jurnalService = {
     return hasil;
   },
 
-  // Peserta & mentor — lihat jurnal milik sendiri
   async getJurnalSaya(userId: number) {
     return jurnalRepository.findByPeserta(userId);
   },
@@ -31,16 +29,24 @@ export const jurnalService = {
   },
 
   async create(payload: { pesertaId?: number | string; kegiatan?: string }) {
-    if (!payload.pesertaId || !payload.kegiatan) {
-      throw new ValidationError("pesertaId dan kegiatan wajib diisi");
+    const errors: FieldError[] = [];
+
+    if (!payload.pesertaId) errors.push({ field: "pesertaId", pesan: "pesertaId wajib diisi" });
+    if (!payload.kegiatan) errors.push({ field: "kegiatan", pesan: "kegiatan wajib diisi" });
+
+    if (payload.kegiatan && String(payload.kegiatan).trim().length < MIN_PANJANG_KEGIATAN) {
+      errors.push({ field: "kegiatan", pesan: `kegiatan minimal ${MIN_PANJANG_KEGIATAN} karakter` });
     }
-    if (String(payload.kegiatan).trim().length < MIN_PANJANG_KEGIATAN) {
-      throw new ValidationError(`kegiatan minimal ${MIN_PANJANG_KEGIATAN} karakter`);
+
+    if (errors.length > 0) {
+      throw new ValidationError(errors);
     }
 
     const peserta = await pesertaRepository.findById(Number(payload.pesertaId));
     if (!peserta) {
-      throw new ValidationError(`pesertaId ${payload.pesertaId} tidak ditemukan`);
+      throw new ValidationError([
+        { field: "pesertaId", pesan: `pesertaId ${payload.pesertaId} tidak ditemukan` }
+      ]);
     }
 
     return jurnalRepository.create({
@@ -60,7 +66,7 @@ export const jurnalService = {
     if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
 
     if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
-      throw new UnauthorizedError("Kamu tidak berhak mengubah jurnal ini");
+      throw new ForbiddenError("Kamu tidak berhak mengubah jurnal ini");
     }
 
     const updated = await jurnalRepository.update(id, payload);
@@ -70,7 +76,9 @@ export const jurnalService = {
 
   async updateStatusReview(id: number, statusReview: string) {
     if (!STATUS_REVIEW_VALID.includes(statusReview as StatusReview)) {
-      throw new ValidationError(`statusReview harus salah satu dari: ${STATUS_REVIEW_VALID.join(", ")}`);
+      throw new ValidationError([
+        { field: "statusReview", pesan: `statusReview harus salah satu dari: ${STATUS_REVIEW_VALID.join(", ")}` }
+      ]);
     }
     const updated = await jurnalRepository.update(id, { statusReview: statusReview as StatusReview });
     if (!updated) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);

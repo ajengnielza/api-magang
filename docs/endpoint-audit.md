@@ -55,3 +55,25 @@
 | ?q=% | Di-escape jadi literal | ✅ 200, tidak mengembalikan semua data secara tidak wajar |
 | ?q=_ | Di-escape jadi literal | ✅ 200, hasil sesuai |
 | ?q= (kosong) | Dianggap tidak ada pencarian | ✅ 200, semua data tanpa filter |
+
+# Daftar Kode Error — Api-magang
+
+| Kode | Status HTTP | Kapan Terjadi | Contoh Response |
+|---|---|---|---|
+| `VALIDATION_ERROR` | 422 | Input tidak memenuhi aturan validasi | `{ "kode": "VALIDATION_ERROR", "pesan": "Validasi gagal", "detail": [{ "field": "email", "pesan": "Format email tidak valid" }] }` |
+| `INVALID_JSON` | 400 | Body request bukan JSON valid | `{ "kode": "INVALID_JSON", "pesan": "Format JSON pada body tidak valid" }` |
+| `UNAUTHORIZED` | 401 | Token tidak ada sama sekali, atau login gagal | `{ "kode": "UNAUTHORIZED", "pesan": "Token tidak ditemukan" }` |
+| `TOKEN_EXPIRED` | 401 | Access token sudah kedaluwarsa | `{ "kode": "TOKEN_EXPIRED", "pesan": "Token sudah kedaluwarsa" }` |
+| `INVALID_TOKEN` | 401 | Token rusak/tidak bisa diverifikasi | `{ "kode": "INVALID_TOKEN", "pesan": "Token tidak valid" }` |
+| `FORBIDDEN` | 403 | Sudah login, tapi role/kepemilikan tidak sesuai | `{ "kode": "FORBIDDEN", "pesan": "Kamu tidak berhak melakukan aksi ini" }` |
+| `NOT_FOUND` | 404 | Data atau route tidak ditemukan | `{ "kode": "NOT_FOUND", "pesan": "Peserta tidak ditemukan" }` |
+| `CONFLICT` | 409 | Data bentrok (duplikat / masih direferensikan) | `{ "kode": "CONFLICT", "pesan": "Email sudah terdaftar" }` |
+| `RATE_LIMITED` | 429 | Terlalu banyak request dalam waktu singkat | `{ "kode": "RATE_LIMITED", "pesan": "Terlalu banyak permintaan" }` |
+| `INTERNAL_ERROR` | 500 | Bug di server yang tidak dikenali | `{ "kode": "INTERNAL_ERROR", "pesan": "Terjadi kesalahan di server" }` |
+
+## Contoh Terbukti dari Testing
+
+- Register email duplikat → `409 CONFLICT`
+- Token rusak (`jwt malformed`) → `401 INVALID_TOKEN`
+- Peserta akses endpoint khusus mentor → `403 FORBIDDEN`
+- Route tidak terdaftar → `404 NOT_FOUND`

@@ -13,10 +13,10 @@ router.get("/not-found", asyncHandler(async () => {
 }));
 
 router.get("/validation", asyncHandler(async () => {
-  throw new ValidationError("Data tidak valid", [
-    "nama wajib diisi",
-    "email tidak valid",
-    "umur harus angka",
+  throw new ValidationError([
+    { field: "nama", pesan: "nama wajib diisi" },
+    { field: "email", pesan: "email tidak valid" },
+    { field: "umur", pesan: "umur harus angka" },
   ]);
 }));
 
@@ -24,8 +24,5 @@ router.get("/unauthorized", asyncHandler(async () => {
   throw new UnauthorizedError();
 }));
 
-router.get("/crash", asyncHandler(async () => {
-  throw new Error("Ini error biasa, bukan AppError");
-}));
 
 export default router;
