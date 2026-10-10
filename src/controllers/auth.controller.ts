@@ -4,7 +4,7 @@ import { asyncHandler, sukses, dibuat } from "../utils";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const data = await authService.register(req.body);
-  dibuat(res, data);
+  dibuat(res, data, "Registrasi berhasil", `/api/v1/peserta/${data.id}`);
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {

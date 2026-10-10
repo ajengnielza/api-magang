@@ -9,7 +9,13 @@ export function suksesDenganTotal<T>(res: Response, data: T[], pesan: string = "
   res.status(200).json({ sukses: true, pesan, total: data.length, data });
 }
 
-export function dibuat<T>(res: Response, data: T, pesan: string = "Data berhasil dibuat"): void {
+export function dibuat<T>(
+  res: Response,
+  data: T,
+  pesan: string = "Data berhasil dibuat",
+  lokasi?: string
+): void {
+  if (lokasi) res.location(lokasi);
   res.status(201).json({ sukses: true, pesan, data });
 }
 

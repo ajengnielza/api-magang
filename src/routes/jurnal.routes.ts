@@ -19,7 +19,7 @@ router.get("/", authGuard, requireRole("mentor"), getSemuaJurnal);
 router.patch("/:id/review", authGuard, requireRole("mentor"), updateStatusReview);
 
 router.get("/:id", getJurnalById);
-router.put("/:id", authGuard, validasiUpdateJurnal, updateJurnal);
+router.patch("/:id", authGuard, validasiUpdateJurnal, updateJurnal);   // sebelumnya put
 router.delete("/:id", authGuard, hapusJurnal);
 
 export default router;

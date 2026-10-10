@@ -68,18 +68,10 @@ export const updatePeserta = asyncHandler(
   }
 );
 
-export const hapusPeserta = asyncHandler(
-  async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-
-    // ID user didapat dari JWT melalui authGuard
-    const userId = req.user!.id;
-
-    await pesertaService.delete(id, userId);
-
-    res.status(204).send();
-  }
-);
+export const hapusPeserta = asyncHandler(async (req: Request, res: Response) => {
+  await pesertaService.delete(Number(req.params.id));
+  res.status(204).send();
+});
 
 export const getProfilSaya = asyncHandler(
   async (req: Request, res: Response) => {
@@ -93,3 +85,9 @@ export const getProfilSaya = asyncHandler(
     sukses(res, peserta);
   }
 );
+
+export const ubahProfilSaya = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
+  const updated = await pesertaService.update(userId, req.body, userId);
+  sukses(res, updated, "Profil berhasil diperbarui");
+});

@@ -1,79 +1,30 @@
-# Audit Endpoint — Api-magang
+# Audit Endpoint v1
 
-| Method | Path | Perlu Login? | Role | Masalah Desain |
+| Method | Path | Login? | Role | Status code utama |
 |---|---|---|---|---|
-| GET | /api/peserta | Tidak | - | - |
-| GET | /api/peserta/:id | Tidak | - | - |
-| GET | /api/peserta/:id/jurnal | Tidak | - | - |
-| GET | /api/peserta/profil-saya | Ya | - | ❌ harusnya `/me`, bukan kata "saya" |
-| POST | /api/peserta | Tidak | - | - |
-| PUT | /api/peserta/:id | Ya | milik sendiri | - |
-| DELETE | /api/peserta/:id | Ya | mentor | - |
-| GET | /api/jurnal | Ya | mentor | - |
-| GET | /api/jurnal/saya | Ya | - | ❌ harusnya `/me/jurnal` |
-| GET | /api/jurnal/:id | Tidak | - | - |
-| POST | /api/jurnal | Ya | - | - |
-| PUT | /api/jurnal/:id | Ya | milik sendiri/mentor | - |
-| PATCH | /api/jurnal/:id/review | Ya | mentor | - |
-| DELETE | /api/jurnal/:id | Ya | - | - |
-| GET | /api/stats | Tidak | - | - |
-| GET | /api/stats/per-peserta | Tidak | - | - |
-| POST | /api/auth/register | Tidak | - | - |
-| POST | /api/auth/login | Tidak | - | - |
-| POST | /api/auth/refresh | Tidak | - | - |
-| POST | /api/auth/logout | Tidak | - | - |
+| POST | /api/v1/auth/register | Tidak | - | 201 (+Location), 409, 422 |
+| POST | /api/v1/auth/login | Tidak | - | 200, 401, 422, 429 |
+| POST | /api/v1/auth/refresh | Tidak | - | 200, 401 |
+| POST | /api/v1/auth/logout | Tidak | - | 200 |
+| GET | /api/v1/me | Ya | semua | 200, 401 |
+| PATCH | /api/v1/me | Ya | semua | 200, 401, 422 |
+| GET | /api/v1/me/jurnal | Ya | semua | 200, 401 |
+| GET | /api/v1/peserta | Tidak | - | 200 |
+| GET | /api/v1/peserta/:id | Tidak | - | 200, 404 |
+| GET | /api/v1/peserta/:id/jurnal | Tidak | - | 200, 404 |
+| PATCH | /api/v1/peserta/:id | Ya | pemilik | 200, 401, 403, 404, 422 |
+| DELETE | /api/v1/peserta/:id | Ya | mentor | 204, 401, 403, 404, 409 |
+| GET | /api/v1/jurnal | Ya | mentor | 200, 401, 403 |
+| GET | /api/v1/jurnal/:id | Tidak | - | 200, 404 |
+| POST | /api/v1/jurnal | Ya | semua | 201 (+Location), 401, 422 |
+| PATCH | /api/v1/jurnal/:id | Ya | pemilik / mentor | 200, 401, 403, 404, 422 |
+| PATCH | /api/v1/jurnal/:id/review | Ya | mentor | 200, 401, 403, 404, 422 |
+| DELETE | /api/v1/jurnal/:id | Ya | pemilik / mentor | 204, 401, 403, 404 |
+| GET | /api/v1/stats | Tidak | - | 200 |
+| GET | /api/v1/stats/per-peserta | Tidak | - | 200 |
+| GET | /api/v1/health | Tidak | - | 200 |
+| GET | /api/v1/health/ready | Tidak | - | 200, 503 |
 
-## Status Code per Skenario
-
-## Status Code per Skenario
-
-| # | Skenario | Status Code | Terverifikasi |
-|---|---|---|---|
-| a | Register berhasil | 201 Created | |
-| b | Register dengan email yang sudah ada | 409 Conflict | ✅ |
-| c | Login dengan password salah | 401 Unauthorized | |
-| d | Akses /me tanpa token | 401 Unauthorized | ✅ |
-| e | Peserta coba PATCH /jurnal/5/review (khusus mentor) | 403 Forbidden | ✅ |
-| f | GET /peserta/9999 (tidak ada) | 404 Not Found | ✅ |
-| g | DELETE /peserta/1 berhasil | 204 No Content | |
-| h | POST /peserta dengan body JSON rusak | 400 Bad Request | |
-| i | POST /peserta dengan email format salah | 422 Unprocessable Entity | |
-| j | Database mati saat request masuk | 503 Service Unavailable | |
-
-## Uji Kasus Tepi — Pagination & Query
-
-| Input | Perilaku yang Diharapkan | Hasil Aktual |
-|---|---|---|
-| ?page=0 | Dianggap page=1 | ✅ 200, meta.page=1 |
-| ?page=-5 | Dianggap page=1 | ✅ 200, meta.page=1 |
-| ?page=abc | Dianggap page=1 | ✅ 200, meta.page=1 |
-| ?limit=1000 | Dipotong jadi 100 | ✅ 200, meta.limit=100 |
-| ?limit=0 | Dianggap limit=1 | ✅ 200, meta.limit=1 |
-| ?limit=abc | Dianggap limit=10 | ✅ 200, meta.limit=10 |
-| ?sortBy=password | Ditolak whitelist, fallback createdAt | ✅ 200, urutan sama dengan default |
-| ?sortBy=nama;DROP TABLE peserta | Ditolak whitelist, tabel tidak terhapus | ✅ 200, tabel peserta masih ada (dicek manual via psql) |
-| ?q=% | Di-escape jadi literal | ✅ 200, tidak mengembalikan semua data secara tidak wajar |
-| ?q=_ | Di-escape jadi literal | ✅ 200, hasil sesuai |
-| ?q= (kosong) | Dianggap tidak ada pencarian | ✅ 200, semua data tanpa filter |
-
-# Daftar Kode Error — Api-magang
-
-| Kode | Status HTTP | Kapan Terjadi | Contoh Response |
-|---|---|---|---|
-| `VALIDATION_ERROR` | 422 | Input tidak memenuhi aturan validasi | `{ "kode": "VALIDATION_ERROR", "pesan": "Validasi gagal", "detail": [{ "field": "email", "pesan": "Format email tidak valid" }] }` |
-| `INVALID_JSON` | 400 | Body request bukan JSON valid | `{ "kode": "INVALID_JSON", "pesan": "Format JSON pada body tidak valid" }` |
-| `UNAUTHORIZED` | 401 | Token tidak ada sama sekali, atau login gagal | `{ "kode": "UNAUTHORIZED", "pesan": "Token tidak ditemukan" }` |
-| `TOKEN_EXPIRED` | 401 | Access token sudah kedaluwarsa | `{ "kode": "TOKEN_EXPIRED", "pesan": "Token sudah kedaluwarsa" }` |
-| `INVALID_TOKEN` | 401 | Token rusak/tidak bisa diverifikasi | `{ "kode": "INVALID_TOKEN", "pesan": "Token tidak valid" }` |
-| `FORBIDDEN` | 403 | Sudah login, tapi role/kepemilikan tidak sesuai | `{ "kode": "FORBIDDEN", "pesan": "Kamu tidak berhak melakukan aksi ini" }` |
-| `NOT_FOUND` | 404 | Data atau route tidak ditemukan | `{ "kode": "NOT_FOUND", "pesan": "Peserta tidak ditemukan" }` |
-| `CONFLICT` | 409 | Data bentrok (duplikat / masih direferensikan) | `{ "kode": "CONFLICT", "pesan": "Email sudah terdaftar" }` |
-| `RATE_LIMITED` | 429 | Terlalu banyak request dalam waktu singkat | `{ "kode": "RATE_LIMITED", "pesan": "Terlalu banyak permintaan" }` |
-| `INTERNAL_ERROR` | 500 | Bug di server yang tidak dikenali | `{ "kode": "INTERNAL_ERROR", "pesan": "Terjadi kesalahan di server" }` |
-
-## Contoh Terbukti dari Testing
-
-- Register email duplikat → `409 CONFLICT`
-- Token rusak (`jwt malformed`) → `401 INVALID_TOKEN`
-- Peserta akses endpoint khusus mentor → `403 FORBIDDEN`
-- Route tidak terdaftar → `404 NOT_FOUND`
+## Catatan temuan (untuk perbaikan berikutnya)
+- GET /jurnal/:id dan /peserta/:id/jurnal belum butuh login, sehingga isi jurnal bisa dibaca siapa saja.
+- /stats belum butuh login.

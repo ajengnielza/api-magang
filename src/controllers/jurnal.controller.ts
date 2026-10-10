@@ -28,7 +28,7 @@ export const getJurnalById = asyncHandler(async (req: Request, res: Response) =>
 
 export const buatJurnal = asyncHandler(async (req: Request, res: Response) => {
   const baru = await jurnalService.create(req.body);
-  dibuat(res, baru);
+  dibuat(res, baru, "Jurnal berhasil dibuat", `/api/v1/jurnal/${baru.id}`);
 });
 
 export const updateJurnal = asyncHandler(async (req: Request, res: Response) => {
@@ -45,6 +45,6 @@ export const updateStatusReview = asyncHandler(async (req: Request, res: Respons
 });
 
 export const hapusJurnal = asyncHandler(async (req: Request, res: Response) => {
-  await jurnalService.delete(Number(req.params.id));
+  await jurnalService.delete(Number(req.params.id), req.user?.id, req.user?.role);
   res.status(204).send();
 });

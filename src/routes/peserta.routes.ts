@@ -4,40 +4,33 @@ import {
   getSemuaPeserta,
   getPesertaById,
   getJurnalByPesertaId,
-  buatPeserta,
   updatePeserta,
   hapusPeserta,
 } from "../controllers/peserta.controller";
 
-import { validasiBodyWajib } from "../middlewares/validasi.middleware";
 import { authGuard } from "../middlewares/auth.middleware";
+import { requireRole } from "../middlewares/role.middleware";
 
 const router = Router();
 
-
+// Mengambil semua peserta
 router.get("/", getSemuaPeserta);
 
-router.post(
-  "/",
-  validasiBodyWajib(["nama", "sekolah"]),
-  buatPeserta
-);
+// Mengambil peserta berdasarkan ID
+router.get("/:id", getPesertaById);
 
-router.put(
-  "/:id",
-  authGuard,
-  validasiBodyWajib(["nama", "sekolah"]),
-  updatePeserta
-);
+// Mengambil jurnal berdasarkan ID peserta
+router.get("/:id/jurnal", getJurnalByPesertaId);
 
+// Memperbarui peserta (wajib login)
+router.patch("/:id", authGuard, updatePeserta);
+
+// Menghapus peserta (wajib login sebagai mentor)
 router.delete(
   "/:id",
   authGuard,
+  requireRole("mentor"),
   hapusPeserta
 );
-
-router.get("/:id", getPesertaById);
-
-router.get("/:id/jurnal", getJurnalByPesertaId);
 
 export default router;

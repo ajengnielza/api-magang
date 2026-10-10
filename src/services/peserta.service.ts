@@ -1,8 +1,10 @@
 import { pesertaRepository } from "../repositories/peserta.repository";
-import { NotFoundError, ValidationError, ForbiddenError, FieldError } from "../utils";
+import { NotFoundError, ValidationError, ForbiddenError, FieldError, pilihField } from "../utils";
 import { AppDataSource } from "../config/database.config";
 import { Peserta } from "../entities/Peserta.entity";
 import { ListQuery } from "../utils/pagination";
+
+const FIELD_UBAH_PESERTA = ["nama", "sekolah", "telepon"] as const;
 
 export const pesertaService = {
   async getAll(filter: { sekolah?: string; fase?: string; limit?: string }) {
@@ -49,19 +51,24 @@ export const pesertaService = {
     });
   },
 
-  async update(id: number, payload: Partial<{ nama: string; sekolah: string; fase: number }>, userId?: number) {
-    if (userId && id !== userId) {
-      throw new ForbiddenError("Kamu tidak bisa mengubah data peserta lain");
-    }
-    const updated = await pesertaRepository.update(id, payload);
+  async update(id: number, body: unknown, userId?: number) {
+  if (userId && id !== userId) {
+    throw new ForbiddenError("Kamu tidak bisa mengubah data peserta lain");
+  }
+
+  const perubahan = pilihField(body, FIELD_UBAH_PESERTA);
+  if (Object.keys(perubahan).length === 0) {
+    throw new ValidationError([
+      { field: "body", pesan: `Isi minimal satu field: ${FIELD_UBAH_PESERTA.join(", ")}` },
+    ]);
+  }
+
+    const updated = await pesertaRepository.update(id, perubahan as Partial<Peserta>);
     if (!updated) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
     return updated;
   },
 
-  async delete(id: number, userId?: number) {
-    if (userId && id !== userId) {
-      throw new ForbiddenError("Kamu tidak bisa menghapus data peserta lain");
-    }
+  async delete(id: number) {
     const berhasil = await pesertaRepository.delete(id);
     if (!berhasil) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
   },
