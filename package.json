@@ -2,7 +2,7 @@
   "name": "api-magang",
   "version": "1.0.0",
   "main": "index.js",
-    "scripts": {
+  "scripts": {
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
@@ -19,6 +19,8 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

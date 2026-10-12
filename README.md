@@ -198,3 +198,24 @@ manusia yang benar-benar bermaksud menghapus.
 2. Salin nilai requestId tersebut
 3. Cari baris log server (format JSON) yang memiliki field `requestId` sama persis
 4. Baris log itu memuat detail lengkap: method, url, status, kode error, dan stack trace
+
+## Refleksi: Entity vs DTO
+
+Entity menggambarkan bentuk tabel di database, lengkap dengan id, hash password,
+role, dan timestamp. DTO menggambarkan bentuk data yang boleh masuk atau keluar
+lewat API, dan hanya berisi field yang relevan untuk satu kasus. Entity Peserta
+tidak boleh dipakai langsung sebagai body register karena memuat field yang tidak
+boleh ditentukan client, seperti role dan id, sehingga client bisa menaikkan hak
+aksesnya sendiri. Memisahkan keduanya juga membuat perubahan skema database tidak
+langsung merusak kontrak API, dan membuat aturan validasi tiap kasus bisa berbeda.
+
+Project ini menggunakan Express versi 5.2.1. Ada tiga perbedaan Express 4 dan Express 5 yang saya pelajari:
+
+1. **`req.body` bisa bernilai `undefined`**
+   Di Express 5, kalau request dikirim tanpa body, `req.body` bisa bernilai `undefined`. Hal ini bisa menyebabkan error saat kode langsung mengambil data seperti email dan password. Karena itu, validasi perlu mengecek apakah body tersedia supaya API tidak mengalami error 500, tetapi memberikan pesan validasi yang sesuai.
+
+2. **`req.query` tidak bisa diubah langsung**
+   Di Express 5, `req.query` hanya bisa dibaca dan tidak bisa ditimpa dengan hasil validasi. Jadi, data query yang sudah diperiksa perlu disimpan di tempat lain, misalnya `req.validated`.
+
+3. **Penulisan pola route berubah**
+   Express 5 tidak lagi mendukung pola route seperti `/:id(\d+)` untuk membatasi parameter ID harus berupa angka. Karena itu, pengecekan apakah ID berupa angka perlu dilakukan melalui DTO atau proses validasi data.
