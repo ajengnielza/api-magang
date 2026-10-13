@@ -8,6 +8,8 @@ import {
 } from "../utils";
 import { parseListQuery, buatMeta } from "../utils/pagination";
 import { SORT_PESERTA } from "../repositories/peserta.repository";
+import { ambilDto } from "../middlewares/validasi.middleware";
+import { UpdateProfilDto } from "../dto/peserta.dto";
 
 export const getSemuaPeserta = asyncHandler(async (req: Request, res: Response) => {
   const lq = parseListQuery(req.query, SORT_PESERTA);
@@ -46,27 +48,17 @@ export const buatPeserta = asyncHandler(
   }
 );
 
+export const updatePeserta = asyncHandler(async (req: Request, res: Response) => {
+  const data = ambilDto<UpdateProfilDto>(req);
+  const updated = await pesertaService.ubahProfil(Number(req.params.id), data);
+  sukses(res, updated, "Peserta berhasil diperbarui");
+});
 
-export const updatePeserta = asyncHandler(
-  async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-
-    // ID user didapat dari JWT melalui authGuard
-    const userId = req.user!.id;
-
-    const updated = await pesertaService.update(
-      id,
-      req.body,
-      userId
-    );
-
-    sukses(
-      res,
-      updated,
-      "Peserta berhasil diperbarui"
-    );
-  }
-);
+export const ubahProfilSaya = asyncHandler(async (req: Request, res: Response) => {
+  const data = ambilDto<UpdateProfilDto>(req);
+  const updated = await pesertaService.ubahProfil(req.user!.id, data);
+  sukses(res, updated, "Profil berhasil diperbarui");
+});;
 
 export const hapusPeserta = asyncHandler(async (req: Request, res: Response) => {
   await pesertaService.delete(Number(req.params.id));
@@ -85,9 +77,3 @@ export const getProfilSaya = asyncHandler(
     sukses(res, peserta);
   }
 );
-
-export const ubahProfilSaya = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
-  const updated = await pesertaService.update(userId, req.body, userId);
-  sukses(res, updated, "Profil berhasil diperbarui");
-});

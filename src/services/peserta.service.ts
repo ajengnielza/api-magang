@@ -3,8 +3,15 @@ import { NotFoundError, ValidationError, ForbiddenError, FieldError, pilihField 
 import { AppDataSource } from "../config/database.config";
 import { Peserta } from "../entities/Peserta.entity";
 import { ListQuery } from "../utils/pagination";
+import { UpdateProfilDto } from "../dto/peserta.dto";
 
 const FIELD_UBAH_PESERTA = ["nama", "sekolah", "telepon"] as const;
+
+function hanyaYangDiisi<T extends object>(data: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, nilai]) => nilai !== undefined)
+  ) as Partial<T>;
+}
 
 export const pesertaService = {
   async getAll(filter: { sekolah?: string; fase?: string; limit?: string }) {
@@ -80,4 +87,15 @@ export const pesertaService = {
   async daftarPeserta(lq: ListQuery, filter: { sekolah?: string; fase?: number }) {
     return pesertaRepository.findPaginated(lq, filter);
   },
+
+  async ubahProfil(id: number, data: UpdateProfilDto) {
+  const perubahan = hanyaYangDiisi(data);
+  if (Object.keys(perubahan).length === 0) {
+    throw new ValidationError([{ field: "body", pesan: "Minimal satu field harus diisi" }]);
+  }
+
+  const updated = await pesertaRepository.update(id, perubahan);
+  if (!updated) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
+  return updated;
+},
 };

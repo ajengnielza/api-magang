@@ -1,5 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
+import { ClassConstructor, plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 import { ValidationError, FieldError } from "../utils/AppError";
+import { ratakan } from "../utils/validasi.util";
 
 export function validasiPeserta(req: Request, res: Response, next: NextFunction): void {
   const { nama, sekolah } = req.body;
@@ -116,4 +119,46 @@ export function validasiLogin(req: Request, res: Response, next: NextFunction): 
   }
 
   next();
+}
+
+type Sumber = "body" | "query" | "params";
+
+export function validasi<T extends object>(
+  dto: ClassConstructor<T>,
+  sumber: Sumber = "body"
+): RequestHandler {
+  return async (req, _res, next) => {
+    try {
+      const mentah: unknown = req[sumber] ?? {};
+
+      if (typeof mentah !== "object" || mentah === null || Array.isArray(mentah)) {
+        throw new ValidationError([
+          { field: sumber, pesan: `${sumber} harus berupa objek` },
+        ]);
+      }
+
+      const instance = plainToInstance(dto, mentah as Record<string, unknown>, {
+        exposeDefaultValues: true,
+      });
+
+      const errors = await validate(instance, {
+        whitelist: true,
+        forbidNonWhitelisted: sumber === "body",
+        validationError: { target: false, value: false },
+      });
+
+      if (errors.length > 0) {
+        throw new ValidationError(ratakan(errors));
+      }
+
+      req.validated = { ...req.validated, [sumber]: instance };
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+export function ambilDto<T>(req: Request, sumber: Sumber = "body"): T {
+  return req.validated?.[sumber] as T;
 }

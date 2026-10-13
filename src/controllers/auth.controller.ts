@@ -1,15 +1,19 @@
 import { Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { asyncHandler, sukses, dibuat } from "../utils";
+import { ambilDto } from "../middlewares/validasi.middleware";
+import { RegisterDto, LoginDto } from "../dto/auth.dto";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const data = await authService.register(req.body);
-  dibuat(res, data, "Registrasi berhasil", `/api/v1/peserta/${data.id}`);
+  const data = ambilDto<RegisterDto>(req);
+  const hasil = await authService.register(data);
+  dibuat(res, hasil, "Registrasi berhasil", `/api/v1/peserta/${hasil.id}`);
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const data = await authService.login(req.body);
-  sukses(res, data);
+  const data = ambilDto<LoginDto>(req);
+  const hasil = await authService.login(data);
+  sukses(res, hasil);
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {

@@ -10,6 +10,8 @@ import {
 
 import { authGuard } from "../middlewares/auth.middleware";
 import { requireRole } from "../middlewares/role.middleware";
+import { UpdateProfilDto } from "../dto/peserta.dto";
+import { validasi } from "../middlewares";
 
 const router = Router();
 
@@ -32,5 +34,5 @@ router.delete(
   requireRole("mentor"),
   hapusPeserta
 );
-
+router.patch("/:id", authGuard, requireRole("mentor"), validasi(UpdateProfilDto), updatePeserta);
 export default router;

@@ -29,8 +29,6 @@ export class LoginDto {
   @IsEmail({}, { message: "Format email tidak valid" })
   email!: string;
 
-  // Login TIDAK memakai aturan kekuatan password: akun lama tidak boleh terkunci,
-  // dan aturan password tidak dibocorkan ke penyerang.
   @IsString({ message: "Password harus berupa teks" })
   @IsNotEmpty({ message: "Password wajib diisi" })
   password!: string;
