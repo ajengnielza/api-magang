@@ -3,9 +3,10 @@ import {
   getSemuaJurnal, getJurnalById, getJurnalSaya, buatJurnal,
   updateJurnal, updateStatusReview, hapusJurnal,
 } from "../controllers/jurnal.controller";
-import { validasiJurnal, validasiUpdateJurnal } from "../middlewares/validasi.middleware";
+import { validasiJurnal, validasiUpdateJurnal, validasi } from "../middlewares/validasi.middleware";
 import { authGuard } from "../middlewares/auth.middleware";
 import { requireRole } from "../middlewares/role.middleware";
+import { ListJurnalQueryDto } from "../dto/jurnal.dto";
 
 const router = Router();
 
@@ -13,8 +14,9 @@ const router = Router();
 router.post("/", authGuard, validasiJurnal, buatJurnal);
 
 // HANYA mentor yang boleh lihat SEMUA jurnal
-router.get("/", authGuard, requireRole("mentor"), getSemuaJurnal);
-
+router.get("/", authGuard, requireRole("mentor"), validasi(ListJurnalQueryDto, "query"),
+  getSemuaJurnal
+);
 // HANYA mentor yang boleh review
 router.patch("/:id/review", authGuard, requireRole("mentor"), updateStatusReview);
 

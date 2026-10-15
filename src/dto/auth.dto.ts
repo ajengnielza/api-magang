@@ -1,18 +1,23 @@
 import {
   IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength,
 } from "class-validator";
+import { KeHurufKecil, Trim } from "./decorators/transform";
 
 export class RegisterDto {
+  @Trim()
   @IsString({ message: "Nama harus berupa teks" })
   @MinLength(3, { message: "Nama minimal 3 karakter" })
   @MaxLength(100, { message: "Nama maksimal 100 karakter" })
   nama!: string;
 
+  @Trim()
   @IsString({ message: "Sekolah harus berupa teks" })
   @MinLength(3, { message: "Sekolah minimal 3 karakter" })
   @MaxLength(100, { message: "Sekolah maksimal 100 karakter" })
   sekolah!: string;
 
+  @Trim()
+  @KeHurufKecil()
   @IsEmail({}, { message: "Format email tidak valid" })
   email!: string;
 
@@ -26,6 +31,8 @@ export class RegisterDto {
 }
 
 export class LoginDto {
+  @Trim()
+  @KeHurufKecil()
   @IsEmail({}, { message: "Format email tidak valid" })
   email!: string;
 

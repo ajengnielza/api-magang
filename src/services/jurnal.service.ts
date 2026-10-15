@@ -99,7 +99,10 @@ export const jurnalService = {
     await jurnalRepository.delete(id);
   },
 
-  async daftarJurnal(lq: ListQuery, filter: { pesertaId?: number; statusReview?: string; from?: string; to?: string }) {
-    return jurnalRepository.findPaginated(lq, filter);
+  async daftarJurnal(
+  lq: ListQuery,
+  filter: { pesertaId?: number; statusReview?: string; belumDireview?: boolean; from?: string; to?: string }
+  ) {
+  return jurnalRepository.findPaginated(lq, filter);
   },
 };

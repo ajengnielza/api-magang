@@ -1,14 +1,14 @@
 
 import { AppDataSource } from "../config/database.config";
 import { JurnalHarian } from "../entities/Jurnal.entity";
-import { FindOptionsOrder, FindOptionsWhere, Between, MoreThanOrEqual, LessThanOrEqual } from "typeorm";
+import { FindOptionsOrder, FindOptionsWhere, Between, MoreThanOrEqual, LessThanOrEqual, Not  } from "typeorm";
 import { ListQuery } from "../utils/pagination";
 
 export const SORT_JURNAL = ["createdAt", "statusReview"] as const;
-
 interface FilterJurnal {
   pesertaId?: number;
   statusReview?: string;
+  belumDireview?: boolean;
   from?: string;
   to?: string;
 }
@@ -54,7 +54,13 @@ export const jurnalRepository = {
     const where: FindOptionsWhere<JurnalHarian> = {};
 
     if (filter.pesertaId) where.pesertaId = filter.pesertaId;
-    if (filter.statusReview) where.statusReview = filter.statusReview as any;
+    if (filter.statusReview) {
+      where.statusReview = filter.statusReview as any;
+    } else if (filter.belumDireview === true) {
+        where.statusReview = "belum" as any;
+    } else if (filter.belumDireview === false) {
+        where.statusReview = Not("belum") as any;
+    }
 
     if (filter.from && filter.to) {
       where.createdAt = Between(new Date(filter.from), new Date(filter.to));
