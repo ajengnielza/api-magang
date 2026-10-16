@@ -25,6 +25,32 @@
 | GET | /api/v1/health | Tidak | - | 200 |
 | GET | /api/v1/health/ready | Tidak | - | 200, 503 |
 
+
 ## Catatan temuan (untuk perbaikan berikutnya)
 - GET /jurnal/:id dan /peserta/:id/jurnal belum butuh login, sehingga isi jurnal bisa dibaca siapa saja.
 - /stats belum butuh login.
+
+## Input per Endpoint (versi DTO)
+
+| Method | Path | Body | Query | Params |
+|---|---|---|---|---|
+| POST | /auth/register | RegisterDto | - | - |
+| POST | /auth/login | LoginDto | - | - |
+| POST | /auth/refresh | RefreshTokenDto | - | - |
+| POST | /auth/logout | RefreshTokenDto | - | - |
+| GET | /me | - | - | - |
+| PATCH | /me | UpdateProfilDto | - | - |
+| GET | /me/jurnal | - | - | - |
+| GET | /peserta | - | ListPesertaQueryDto | - |
+| GET | /peserta/:id | - | - | IdParamDto |
+| GET | /peserta/:id/jurnal | - | - | IdParamDto |
+| PATCH | /peserta/:id | UpdateProfilDto | - | IdParamDto |
+| DELETE | /peserta/:id | - | - | IdParamDto |
+| GET | /jurnal | - | ListJurnalQueryDto | - |
+| POST | /jurnal | CreateJurnalDto | - | - |
+| GET | /jurnal/:id | - | - | IdParamDto |
+| PATCH | /jurnal/:id | UpdateJurnalDto | - | IdParamDto |
+| PATCH | /jurnal/:id/review | ReviewJurnalDto | - | IdParamDto |
+| DELETE | /jurnal/:id | - | - | IdParamDto |
+
+Endpoint tanpa input: GET /stats, GET /stats/per-peserta, GET /health, GET /health/ready.

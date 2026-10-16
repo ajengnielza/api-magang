@@ -1,13 +1,28 @@
+
 import { Type } from "class-transformer";
 import {
-  ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString,
-  IsUrl, Max, MaxLength, Min, MinLength, ValidateIf, ValidateNested,
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateIf,
+  ValidateNested,
 } from "class-validator";
 import { ListQueryDto } from "./common.dto";
 import { KeBoolean, Trim } from "./decorators/transform";
 
 export const SORT_JURNAL = ["createdAt", "statusReview"] as const;
 export const STATUS_REVIEW = ["belum", "disetujui", "revisi"] as const;
+
 export type StatusReviewDto = (typeof STATUS_REVIEW)[number];
 
 export class ListJurnalQueryDto extends ListQueryDto {
@@ -31,11 +46,15 @@ export class ListJurnalQueryDto extends ListQueryDto {
   statusReview?: StatusReviewDto;
 
   @IsOptional()
-  @IsDateString({}, { message: "from harus berformat tanggal ISO, contoh 2026-09-01" })
+  @IsDateString({}, {
+    message: "from harus berformat tanggal ISO, contoh 2026-09-01",
+  })
   from?: string;
 
   @IsOptional()
-  @IsDateString({}, { message: "to harus berformat tanggal ISO, contoh 2026-09-30" })
+  @IsDateString({}, {
+    message: "to harus berformat tanggal ISO, contoh 2026-09-30",
+  })
   to?: string;
 
   @IsOptional()
@@ -46,6 +65,9 @@ export class ListJurnalQueryDto extends ListQueryDto {
 
 export class LampiranDto {
   @IsUrl({}, { message: "URL lampiran tidak valid" })
+  @MaxLength(500, {
+    message: "URL lampiran maksimal 500 karakter",
+  })
   url!: string;
 
   @IsOptional()
@@ -69,6 +91,9 @@ export class CreateJurnalDto {
 
   @IsOptional()
   @IsUrl({}, { message: "Link commit harus berupa URL yang valid" })
+  @MaxLength(500, {
+    message: "Link commit maksimal 500 karakter",
+  })
   linkCommit?: string;
 
   @IsOptional()
@@ -77,6 +102,7 @@ export class CreateJurnalDto {
   @ValidateNested({ each: true })
   @Type(() => LampiranDto)
   lampiran?: LampiranDto[];
+
   // pesertaId SENGAJA tidak ada: diambil dari token
 }
 
@@ -96,6 +122,9 @@ export class UpdateJurnalDto {
 
   @IsOptional()
   @IsUrl({}, { message: "Link commit harus berupa URL yang valid" })
+  @MaxLength(500, {
+    message: "Link commit maksimal 500 karakter",
+  })
   linkCommit?: string;
 }
 
@@ -108,7 +137,9 @@ export class ReviewJurnalDto {
   // Catatan WAJIB kalau jurnal disetujui atau perlu direvisi
   @ValidateIf((o: ReviewJurnalDto) => o.statusReview !== "belum")
   @Trim()
-  @IsString({ message: "Catatan wajib diisi saat jurnal disetujui atau perlu direvisi" })
+  @IsString({
+    message: "Catatan wajib diisi saat jurnal disetujui atau perlu direvisi",
+  })
   @MinLength(5, { message: "Catatan minimal 5 karakter" })
   @MaxLength(1000, { message: "Catatan maksimal 1000 karakter" })
   catatan?: string;

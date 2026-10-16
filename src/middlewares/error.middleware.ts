@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { QueryFailedError } from "typeorm";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import { AppError, ConflictError, NotFoundError } from "../utils/AppError";
+import {
+  AppError,
+  ConflictError,
+  NotFoundError,
+} from "../utils/AppError";
 import { ErrorCode } from "../utils/errorCodes";
 import { logger } from "../utils/logger";
 import { isProd } from "../config/env.config";
@@ -11,38 +15,85 @@ const PG_FOREIGN_KEY_VIOLATION = "23503";
 const PG_INVALID_TEXT = "22P02";
 
 function terjemahkanError(err: unknown): AppError {
-  if (err instanceof AppError) return err;
+  // Error aplikasi yang sudah memiliki status dan kode.
+  if (err instanceof AppError) {
+    return err;
+  }
 
+  // Error dari PostgreSQL / TypeORM.
   if (err instanceof QueryFailedError) {
     const kodePg = (err.driverError as { code?: string }).code;
 
     if (kodePg === PG_UNIQUE_VIOLATION) {
-      return new ConflictError("Data dengan nilai yang sama sudah ada");
+      return new ConflictError(
+        "Data dengan nilai yang sama sudah ada"
+      );
     }
+
     if (kodePg === PG_FOREIGN_KEY_VIOLATION) {
-      return new ConflictError("Data berelasi dengan data lain (tidak ditemukan atau masih dipakai)");
+      return new ConflictError(
+        "Data berelasi dengan data lain (tidak ditemukan atau masih dipakai)"
+      );
     }
+
     if (kodePg === PG_INVALID_TEXT) {
-      return new AppError("Format nilai tidak valid", 400, ErrorCode.VALIDATION_ERROR);
+      return new AppError(
+        "Format nilai tidak valid",
+        400,
+        ErrorCode.VALIDATION_ERROR
+      );
     }
   }
 
+  // Error JWT.
   if (err instanceof TokenExpiredError) {
-    return new AppError("Token sudah kedaluwarsa", 401, ErrorCode.TOKEN_EXPIRED);
-  }
-  if (err instanceof JsonWebTokenError) {
-    return new AppError("Token tidak valid", 401, ErrorCode.INVALID_TOKEN);
+    return new AppError(
+      "Token sudah kedaluwarsa",
+      401,
+      ErrorCode.TOKEN_EXPIRED
+    );
   }
 
+  if (err instanceof JsonWebTokenError) {
+    return new AppError(
+      "Token tidak valid",
+      401,
+      ErrorCode.INVALID_TOKEN
+    );
+  }
+
+  // JSON request tidak valid.
   if (
     typeof err === "object" &&
     err !== null &&
     (err as { type?: string }).type === "entity.parse.failed"
   ) {
-    return new AppError("Format JSON pada body tidak valid", 400, ErrorCode.INVALID_JSON);
+    return new AppError(
+      "Format JSON pada body tidak valid",
+      400,
+      ErrorCode.INVALID_JSON
+    );
   }
 
-  return new AppError("Terjadi kesalahan di server", 500, ErrorCode.INTERNAL_ERROR);
+  // Ukuran request melebihi batas body parser.
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    (err as { type?: string }).type === "entity.too.large"
+  ) {
+    return new AppError(
+      "Ukuran request terlalu besar",
+      413,
+      ErrorCode.PAYLOAD_TOO_LARGE
+    );
+  }
+
+  // Fallback untuk error yang belum dikenali.
+  return new AppError(
+    "Terjadi kesalahan di server",
+    500,
+    ErrorCode.INTERNAL_ERROR
+  );
 }
 
 export function errorHandler(
@@ -67,6 +118,7 @@ export function errorHandler(
     userId: req.user?.id,
   };
 
+  // Error server dicatat sebagai error; error lainnya sebagai warning.
   if (appErr.statusCode >= 500) {
     logger.error(appErr.message, {
       ...info,
@@ -81,14 +133,25 @@ export function errorHandler(
     error: {
       kode: appErr.kode,
       pesan: appErr.message,
-      ...(appErr.detail !== undefined && { detail: appErr.detail }),
+      ...(appErr.detail !== undefined && {
+        detail: appErr.detail,
+      }),
       ...(!isProd &&
-        err instanceof Error && { debug: { asli: err.message, stack: err.stack } }),
+        err instanceof Error && {
+          debug: {
+            asli: err.message,
+            stack: err.stack,
+          },
+        }),
     },
     requestId: req.requestId,
   });
 }
 
-export function notFoundHandler(req: Request, _res: Response, next: NextFunction): void {
+export function notFoundHandler(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): void {
   next(new NotFoundError(`Route ${req.method} ${req.originalUrl}`));
 }

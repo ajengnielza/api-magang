@@ -1,5 +1,15 @@
+
 import { Type } from "class-transformer";
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+} from "class-validator";
 import { KeHurufBesar, Trim } from "./decorators/transform";
 
 export class IdParamDto {
@@ -15,18 +25,23 @@ export class ListQueryDto {
   @Type(() => Number)
   @IsInt({ message: "page harus berupa bilangan bulat" })
   @Min(1, { message: "page minimal 1" })
+  @Max(1000000, {
+    message: "page maksimal 1000000",
+  })
   page: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: "limit harus berupa bilangan bulat" })
   @Min(1, { message: "limit minimal 1" })
-  @Max(100, { message: "limit maksimal 100" })
+  @Max(1000000, { message: "limit maksimal 1000000" })
   limit: number = 10;
 
   @IsOptional()
   @KeHurufBesar()
-  @IsIn(["ASC", "DESC"], { message: "order harus ASC atau DESC" })
+  @IsIn(["ASC", "DESC"], {
+    message: "order harus ASC atau DESC",
+  })
   order: "ASC" | "DESC" = "DESC";
 
   @IsOptional()
@@ -34,4 +49,11 @@ export class ListQueryDto {
   @IsString({ message: "q harus berupa teks" })
   @MaxLength(100, { message: "q maksimal 100 karakter" })
   q?: string;
+
+  @IsOptional()
+  @IsUrl({}, { message: "Link commit harus berupa URL yang valid" })
+  @MaxLength(500, {
+    message: "Link commit maksimal 500 karakter",
+  })
+  linkCommit?: string;
 }

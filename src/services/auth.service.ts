@@ -1,16 +1,14 @@
+
 import { pesertaRepository } from "../repositories/peserta.repository";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository";
 import { hashPassword, cekPassword } from "../utils/password";
-import { buatAccessToken, buatRefreshToken, verifikasiRefreshToken } from "../utils/jwt";
+import {
+  buatAccessToken,
+  buatRefreshToken,
+  verifikasiRefreshToken,
+} from "../utils/jwt";
 import { ConflictError, UnauthorizedError } from "../utils";
 import { RegisterDto } from "../dto/auth.dto";
-
-interface RegisterInput {
-  nama: string;
-  sekolah: string;
-  email: string;
-  password: string;
-}
 
 interface LoginInput {
   email: string;
@@ -19,40 +17,49 @@ interface LoginInput {
 
 export const authService = {
   async register(data: RegisterDto) {
-  const { konfirmasiPassword, ...dataPeserta } = data;
+    const { konfirmasiPassword, ...dataPeserta } = data;
 
-  const sudahAda = await pesertaRepository.findByEmail(dataPeserta.email);
-  if (sudahAda) {
-    throw new ConflictError("Email sudah terdaftar");
-  }
+    const sudahAda = await pesertaRepository.findByEmail(dataPeserta.email);
 
-  const passwordHash = await hashPassword(dataPeserta.password);
+    if (sudahAda) {
+      throw new ConflictError("Email sudah terdaftar");
+    }
 
-  const tersimpan = await pesertaRepository.create({
-    nama: dataPeserta.nama,
-    sekolah: dataPeserta.sekolah,
-    email: dataPeserta.email,
-    password: passwordHash,
-    role: "peserta",
-  });
+    const passwordHash = await hashPassword(dataPeserta.password);
 
-  const { password, ...aman } = tersimpan;
-  return aman;
-},
+    const tersimpan = await pesertaRepository.create({
+      nama: dataPeserta.nama,
+      sekolah: dataPeserta.sekolah,
+      email: dataPeserta.email,
+      password: passwordHash,
+      role: "peserta",
+    });
+
+    const { password, ...aman } = tersimpan;
+    return aman;
+  },
 
   async login(data: LoginInput) {
-    const peserta = await pesertaRepository.findByEmailDenganPassword(data.email);
+    const peserta = await pesertaRepository.findByEmailDenganPassword(
+      data.email,
+    );
 
     if (!peserta) {
       throw new UnauthorizedError("Email atau password salah");
     }
 
     const passwordCocok = await cekPassword(data.password, peserta.password);
+
     if (!passwordCocok) {
       throw new UnauthorizedError("Email atau password salah");
     }
 
-    const payload = { id: peserta.id, email: peserta.email, role: peserta.role };
+    const payload = {
+      id: peserta.id,
+      email: peserta.email,
+      role: peserta.role,
+    };
+
     const accessToken = buatAccessToken(payload);
     const refreshToken = buatRefreshToken(payload);
 
@@ -63,15 +70,20 @@ export const authService = {
     });
 
     const { password, ...pesertaAman } = peserta;
+
     return { accessToken, refreshToken, peserta: pesertaAman };
   },
 
   async refresh(refreshTokenInput: string) {
     const payload = verifikasiRefreshToken(refreshTokenInput);
 
-    const tersimpan = await refreshTokenRepository.findByToken(refreshTokenInput);
+    const tersimpan =
+      await refreshTokenRepository.findByToken(refreshTokenInput);
+
     if (!tersimpan) {
-      throw new UnauthorizedError("Refresh token tidak dikenali atau sudah dicabut");
+      throw new UnauthorizedError(
+        "Refresh token tidak dikenali atau sudah dicabut",
+      );
     }
 
     const accessTokenBaru = buatAccessToken({

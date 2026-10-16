@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { asyncHandler, sukses, dibuat, serialisasi } from "../utils";
 import { ambilDto } from "../middlewares/validasi.middleware";
-import { RegisterDto, LoginDto } from "../dto/auth.dto";
+import { RegisterDto, LoginDto, RefreshTokenDto } from "../dto/auth.dto";
 import { PesertaResponseDto } from "../dto/response/peserta.response";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
@@ -18,13 +18,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = ambilDto<RefreshTokenDto>(req);
   const data = await authService.refresh(refreshToken);
   sukses(res, data);
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = ambilDto<RefreshTokenDto>(req);
   await authService.logout(refreshToken);
   sukses(res, null, "Logout berhasil");
 });

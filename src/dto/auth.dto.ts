@@ -1,5 +1,11 @@
+
 import {
-  IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength,
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
 } from "class-validator";
 import { KeHurufKecil, Trim } from "./decorators/transform";
 import { Sama } from "./decorators/sama";
@@ -31,8 +37,10 @@ export class RegisterDto {
   password!: string;
 
   @IsString({ message: "Konfirmasi password harus berupa teks" })
-@Sama("password", { message: "Konfirmasi password tidak cocok" })
-konfirmasiPassword!: string;
+  @Sama("password", {
+    message: "Konfirmasi password tidak cocok",
+  })
+  konfirmasiPassword!: string;
 }
 
 export class LoginDto {
@@ -44,4 +52,13 @@ export class LoginDto {
   @IsString({ message: "Password harus berupa teks" })
   @IsNotEmpty({ message: "Password wajib diisi" })
   password!: string;
+}
+
+export class RefreshTokenDto {
+  @IsString({ message: "refreshToken harus berupa teks" })
+  @IsNotEmpty({ message: "refreshToken wajib diisi" })
+  @MaxLength(2048, {
+    message: "refreshToken terlalu panjang",
+  })
+  refreshToken!: string;
 }

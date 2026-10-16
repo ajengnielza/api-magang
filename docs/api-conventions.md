@@ -30,3 +30,18 @@
 7. Penamaan
    - Bahasa Indonesia untuk field dan pesan
    - camelCase untuk nama field JSON
+
+## Validasi Input (revisi Minggu 14)
+
+- Semua input (body, query, params) melewati DTO lewat middleware `validasi()`.
+- 422: semua kegagalan validasi DTO (body, query, maupun params).
+- 400: hanya untuk body yang tidak bisa di-parse sama sekali (INVALID_JSON).
+- 413: body request melebihi 1 MB (PAYLOAD_TOO_LARGE).
+- Body: properti asing ditolak (forbidNonWhitelisted).
+  Query: properti yang tidak dikenal diabaikan.
+- Teks dirapikan sebelum divalidasi (trim; email diubah ke huruf kecil).
+- id, role, dan pesertaId tidak pernah diterima dari body.
+  pesertaId diambil dari token.
+- Data peserta dan jurnal keluar lewat Response DTO (whitelist @Expose).
+- Pembagian aturan: bentuk dan format di DTO, aturan bisnis di service,
+  keunikan dan relasi di database.
