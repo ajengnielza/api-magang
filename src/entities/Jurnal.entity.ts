@@ -35,6 +35,12 @@ export class JurnalHarian {
   @Column({ type: "enum", enum: ["belum", "disetujui", "revisi"], default: "belum" })
   statusReview!: StatusReview;
 
+  @Column({ type: "text", nullable: true })
+  catatanMentor?: string | null;
+
+  @Column({ type: "jsonb", nullable: true })
+  lampiran?: { url: string; keterangan?: string }[];
+
   @CreateDateColumn()
   createdAt!: Date;
 }

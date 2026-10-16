@@ -1,24 +1,9 @@
 import { jurnalRepository } from "../repositories/jurnal.repository";
-import { pesertaRepository } from "../repositories/peserta.repository";
-import { StatusReview } from "../entities/Jurnal.entity";
-import { JurnalHarian } from "../entities/Jurnal.entity";
-import { NotFoundError, ForbiddenError, ValidationError, FieldError, pilihField } from "../utils";
+import { NotFoundError, ForbiddenError, ValidationError, hanyaYangDiisi } from "../utils";
 import { ListQuery } from "../utils/pagination";
-
-const MIN_PANJANG_KEGIATAN = 10;
-const STATUS_REVIEW_VALID: StatusReview[] = ["belum", "disetujui", "revisi"];
-const FIELD_UBAH_JURNAL = ["kegiatan", "hambatan", "linkCommit"] as const;
+import { CreateJurnalDto, ReviewJurnalDto, UpdateJurnalDto } from "../dto/jurnal.dto";
 
 export const jurnalService = {
-  async getAll(filter: { status?: string }) {
-    let hasil: JurnalHarian[] = await jurnalRepository.findAll();
-
-    if (filter.status?.trim()) {
-      hasil = hasil.filter((j) => j.statusReview === filter.status);
-    }
-    return hasil;
-  },
-
   async getJurnalSaya(userId: number) {
     return jurnalRepository.findByPeserta(userId);
   },
@@ -29,66 +14,51 @@ export const jurnalService = {
     return jurnal;
   },
 
-  async create(payload: { pesertaId?: number | string; kegiatan?: string }) {
-    const errors: FieldError[] = [];
-
-    if (!payload.pesertaId) errors.push({ field: "pesertaId", pesan: "pesertaId wajib diisi" });
-    if (!payload.kegiatan) errors.push({ field: "kegiatan", pesan: "kegiatan wajib diisi" });
-
-    if (payload.kegiatan && String(payload.kegiatan).trim().length < MIN_PANJANG_KEGIATAN) {
-      errors.push({ field: "kegiatan", pesan: `kegiatan minimal ${MIN_PANJANG_KEGIATAN} karakter` });
-    }
-
-    if (errors.length > 0) {
-      throw new ValidationError(errors);
-    }
-
-    const peserta = await pesertaRepository.findById(Number(payload.pesertaId));
-    if (!peserta) {
-      throw new ValidationError([
-        { field: "pesertaId", pesan: `pesertaId ${payload.pesertaId} tidak ditemukan` }
-      ]);
-    }
-
+  async create(pesertaId: number, data: CreateJurnalDto) {
     return jurnalRepository.create({
-      pesertaId: Number(payload.pesertaId),
-      kegiatan: String(payload.kegiatan),
+      pesertaId,
+      kegiatan: data.kegiatan,
+      hambatan: data.hambatan,
+      linkCommit: data.linkCommit,
+      lampiran: data.lampiran,
       statusReview: "belum",
     });
   },
 
-  async update(id: number, body: unknown, userId?: number, userRole?: "peserta" | "mentor") {
-  const jurnal = await jurnalRepository.findById(id);
-  if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
+  async update(
+    id: number,
+    data: UpdateJurnalDto,
+    userId?: number,
+    userRole?: "peserta" | "mentor"
+  ) {
+    const jurnal = await jurnalRepository.findById(id);
+    if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
 
-  if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
-    throw new ForbiddenError("Kamu tidak berhak mengubah jurnal ini");
-  }
+    if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
+      throw new ForbiddenError("Kamu tidak berhak mengubah jurnal ini");
+    }
 
-    const perubahan = pilihField(body, FIELD_UBAH_JURNAL);
+    const perubahan = hanyaYangDiisi(data);
     if (Object.keys(perubahan).length === 0) {
-      throw new ValidationError([
-        { field: "body", pesan: `Isi minimal satu field: ${FIELD_UBAH_JURNAL.join(", ")}` },
-      ]);
+      throw new ValidationError([{ field: "body", pesan: "Minimal satu field harus diisi" }]);
     }
 
-      const updated = await jurnalRepository.update(id, perubahan as Partial<JurnalHarian>);
-      if (!updated) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
-      return updated;
-    },
-
-  async updateStatusReview(id: number, statusReview: string) {
-    if (!STATUS_REVIEW_VALID.includes(statusReview as StatusReview)) {
-      throw new ValidationError([
-        { field: "statusReview", pesan: `statusReview harus salah satu dari: ${STATUS_REVIEW_VALID.join(", ")}` }
-      ]);
-    }
-    const updated = await jurnalRepository.update(id, { statusReview: statusReview as StatusReview });
+    const updated = await jurnalRepository.update(id, perubahan);
     if (!updated) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
     return updated;
   },
 
-    async delete(id: number, userId?: number, userRole?: "peserta" | "mentor") {
+  async updateStatusReview(id: number, data: ReviewJurnalDto, reviewerId: number) {
+    const updated = await jurnalRepository.update(id, {
+      statusReview: data.statusReview,
+      catatanMentor: data.statusReview === "belum" ? null : data.catatan,
+      reviewerId,
+    });
+    if (!updated) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
+    return updated;
+  },
+
+  async delete(id: number, userId?: number, userRole?: "peserta" | "mentor") {
     const jurnal = await jurnalRepository.findById(id);
     if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id} tidak ditemukan`);
 
@@ -100,9 +70,9 @@ export const jurnalService = {
   },
 
   async daftarJurnal(
-  lq: ListQuery,
-  filter: { pesertaId?: number; statusReview?: string; belumDireview?: boolean; from?: string; to?: string }
+    lq: ListQuery,
+    filter: { pesertaId?: number; statusReview?: string; belumDireview?: boolean; from?: string; to?: string }
   ) {
-  return jurnalRepository.findPaginated(lq, filter);
+    return jurnalRepository.findPaginated(lq, filter);
   },
 };

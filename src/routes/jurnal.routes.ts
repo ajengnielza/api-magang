@@ -1,27 +1,28 @@
 import { Router } from "express";
-import {
-  getSemuaJurnal, getJurnalById, getJurnalSaya, buatJurnal,
-  updateJurnal, updateStatusReview, hapusJurnal,
-} from "../controllers/jurnal.controller";
-import { validasiJurnal, validasiUpdateJurnal, validasi } from "../middlewares/validasi.middleware";
 import { authGuard } from "../middlewares/auth.middleware";
 import { requireRole } from "../middlewares/role.middleware";
-import { ListJurnalQueryDto } from "../dto/jurnal.dto";
+import { validasi } from "../middlewares/validasi.middleware";
+import { IdParamDto } from "../dto/common.dto";
+import {
+  CreateJurnalDto, ListJurnalQueryDto, ReviewJurnalDto, UpdateJurnalDto,
+} from "../dto/jurnal.dto";
+import {
+  buatJurnal, getJurnalById, getSemuaJurnal, hapusJurnal, updateJurnal, updateStatusReview,
+} from "../controllers/jurnal.controller";
+
 
 const router = Router();
 
-// Peserta & mentor (siapapun yang login) boleh buat jurnal & lihat milik sendiri
-router.post("/", authGuard, validasiJurnal, buatJurnal);
-
-// HANYA mentor yang boleh lihat SEMUA jurnal
-router.get("/", authGuard, requireRole("mentor"), validasi(ListJurnalQueryDto, "query"),
-  getSemuaJurnal
+router.post("/", authGuard, validasi(CreateJurnalDto), buatJurnal);
+router.get("/", authGuard, requireRole("mentor"), validasi(ListJurnalQueryDto, "query"), getSemuaJurnal);
+router.patch(
+  "/:id/review",
+  authGuard, requireRole("mentor"),
+  validasi(IdParamDto, "params"), validasi(ReviewJurnalDto),
+  updateStatusReview
 );
-// HANYA mentor yang boleh review
-router.patch("/:id/review", authGuard, requireRole("mentor"), updateStatusReview);
-
-router.get("/:id", getJurnalById);
-router.patch("/:id", authGuard, validasiUpdateJurnal, updateJurnal);   // sebelumnya put
-router.delete("/:id", authGuard, hapusJurnal);
+router.get("/:id", validasi(IdParamDto, "params"), getJurnalById);
+router.patch("/:id", authGuard, validasi(IdParamDto, "params"), validasi(UpdateJurnalDto), updateJurnal);
+router.delete("/:id", authGuard, validasi(IdParamDto, "params"), hapusJurnal);
 
 export default router;

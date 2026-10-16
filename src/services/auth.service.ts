@@ -3,6 +3,7 @@ import { refreshTokenRepository } from "../repositories/refreshToken.repository"
 import { hashPassword, cekPassword } from "../utils/password";
 import { buatAccessToken, buatRefreshToken, verifikasiRefreshToken } from "../utils/jwt";
 import { ConflictError, UnauthorizedError } from "../utils";
+import { RegisterDto } from "../dto/auth.dto";
 
 interface RegisterInput {
   nama: string;
@@ -17,25 +18,27 @@ interface LoginInput {
 }
 
 export const authService = {
-  async register(data: RegisterInput) {
-    const sudahAda = await pesertaRepository.findByEmail(data.email);
-    if (sudahAda) {
-      throw new ConflictError("Email sudah terdaftar");
-    }
+  async register(data: RegisterDto) {
+  const { konfirmasiPassword, ...dataPeserta } = data;
 
-    const passwordHash = await hashPassword(data.password);
+  const sudahAda = await pesertaRepository.findByEmail(dataPeserta.email);
+  if (sudahAda) {
+    throw new ConflictError("Email sudah terdaftar");
+  }
 
-    const tersimpan = await pesertaRepository.create({
-      nama: data.nama,
-      sekolah: data.sekolah,
-      email: data.email,
-      password: passwordHash,
-      role: "peserta",
-    });
+  const passwordHash = await hashPassword(dataPeserta.password);
 
-    const { password, ...aman } = tersimpan;
-    return aman;
-  },
+  const tersimpan = await pesertaRepository.create({
+    nama: dataPeserta.nama,
+    sekolah: dataPeserta.sekolah,
+    email: dataPeserta.email,
+    password: passwordHash,
+    role: "peserta",
+  });
+
+  const { password, ...aman } = tersimpan;
+  return aman;
+},
 
   async login(data: LoginInput) {
     const peserta = await pesertaRepository.findByEmailDenganPassword(data.email);
