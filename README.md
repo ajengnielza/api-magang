@@ -219,3 +219,20 @@ Project ini menggunakan Express versi 5.2.1. Ada tiga perbedaan Express 4 dan Ex
 
 3. **Penulisan pola route berubah**
    Express 5 tidak lagi mendukung pola route seperti `/:id(\d+)` untuk membatasi parameter ID harus berupa angka. Karena itu, pengecekan apakah ID berupa angka perlu dilakukan melalui DTO atau proses validasi data.
+
+### Membuktikan Test Bisa Gagal
+
+Saya melakukan dua percobaan dengan sengaja mengubah kode agar menghasilkan kesalahan (*sabotage*).
+
+1. **Pengujian `buatMeta`:** Mengubah kondisi `hasNext` dari `page < totalPages` menjadi `page <= totalPages`. Hasilnya, 4 tes gagal dan 17 tes lolos. Ini membuktikan tes dapat mendeteksi kesalahan pada perhitungan halaman berikutnya.
+2. **Pengujian `potongTeks`:** Mengubah kondisi `teks.length <= max` menjadi `teks.length < max`. Hasilnya, 1 tes gagal dan 14 tes lolos. Tes berhasil mendeteksi kesalahan ketika panjang teks sama dengan batas maksimum.
+
+Setelah kedua percobaan, kode dipulihkan ke versi semula dan seluruh tes dijalankan kembali untuk memastikan fungsi bekerja dengan benar.
+
+### Soal 6: Jebakan Async
+
+Saya menguji perilaku assertion async menggunakan Jest. Pada percobaan pertama, tes tanpa `await` menghasilkan `JestAssertionError` karena Promise dari `ambilPeserta(1)` berhasil diselesaikan, padahal assertion mengharapkan Promise ditolak.
+
+Selanjutnya, saya memperbaiki tes dengan menggunakan `async`, `await`, dan `expect.assertions(1)`. Pengujian menggunakan `ambilPeserta(99)` berhasil dengan status PASS karena fungsi menghasilkan error sesuai harapan.
+
+Terakhir, saya menguji kembali dengan mengganti ID `99` menjadi `1` untuk memastikan tes dapat mendeteksi kondisi yang salah. Hasil percobaan tersebut dicatat sebagai bukti bahwa assertion async perlu ditunggu menggunakan `await` agar kegagalannya dilaporkan dengan benar.
