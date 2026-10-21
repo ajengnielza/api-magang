@@ -44,6 +44,7 @@ describe("RegisterDto", () => {
     ["nama hanya 2 karakter", { nama: "Bu" }, "nama"],
     ["nama hanya spasi", { nama: "      " }, "nama"],
     ["nama 101 karakter", { nama: "a".repeat(101) }, "nama"],
+    ["sekolah 101 karakter", { sekolah: "a".repeat(101) }, "sekolah"],
     ["nama bukan teks", { nama: 123 }, "nama"],
     ["sekolah kosong", { sekolah: "" }, "sekolah"],
     ["email salah format", { email: "bukan-email" }, "email"],

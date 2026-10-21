@@ -1,6 +1,6 @@
 import { IsString } from "class-validator";
 import { Sama } from "../../../src/dto/decorators/sama";
-import { validasiDto } from "../../../src/utils/vaSlidasi.util";
+import { validasiDto } from "../../../src/utils/validasi.util";
 import { detailYangGagal, fieldYangGagal } from "../../helpers/dto";
 
 class ContohDto {

@@ -236,3 +236,11 @@ Saya menguji perilaku assertion async menggunakan Jest. Pada percobaan pertama, 
 Selanjutnya, saya memperbaiki tes dengan menggunakan `async`, `await`, dan `expect.assertions(1)`. Pengujian menggunakan `ambilPeserta(99)` berhasil dengan status PASS karena fungsi menghasilkan error sesuai harapan.
 
 Terakhir, saya menguji kembali dengan mengganti ID `99` menjadi `1` untuk memastikan tes dapat mendeteksi kondisi yang salah. Hasil percobaan tersebut dicatat sebagai bukti bahwa assertion async perlu ditunggu menggunakan `await` agar kegagalannya dilaporkan dengan benar.
+
+Catatan Minggu 15: Test DTO Harus Bisa Gagal
+
+Eksperimen A: Menghapus MaxLength(72) pada password membuat test "password 73 karakter" gagal. Ini membuktikan bahwa test dapat mendeteksi aturan validasi yang hilang.
+
+Eksperimen B: Menghapus MaxLength(100) pada sekolah awalnya tidak membuat test gagal karena batas tersebut belum diuji. Setelah test "sekolah 101 karakter" ditambahkan, penghapusan decorator dapat terdeteksi.
+
+Kesimpulan: Test tidak cukup hanya lulus. Test juga harus mampu mendeteksi ketika aturan validasi yang seharusnya ada dihapus.
