@@ -1,5 +1,8 @@
-import { ValidationError as ClassValidatorError } from "class-validator";
-import { FieldError } from "./AppError";
+import { ClassConstructor, plainToInstance } from "class-transformer";
+import { validate, ValidationError as ClassValidatorError } from "class-validator";
+import { FieldError, ValidationError } from "./AppError";
+
+export type Sumber = "body" | "query" | "params";
 
 export function ratakan(
   errors: ClassValidatorError[],
@@ -19,4 +22,32 @@ export function ratakan(
 
     return [...pesanSendiri, ...pesanAnak];
   });
+}
+
+export async function validasiDto<T extends object>(
+  dto: ClassConstructor<T>,
+  mentah: unknown,
+  sumber: Sumber = "body"
+): Promise<T> {
+  const data = mentah ?? {};
+
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    throw new ValidationError([{ field: sumber, pesan: `${sumber} harus berupa objek` }]);
+  }
+
+  const instance = plainToInstance(dto, data as Record<string, unknown>, {
+    exposeDefaultValues: true,
+  });
+
+  const errors = await validate(instance, {
+    whitelist: true,
+    forbidNonWhitelisted: sumber === "body",
+    validationError: { target: false, value: false },
+  });
+
+  if (errors.length > 0) {
+    throw new ValidationError(ratakan(errors));
+  }
+
+  return instance;
 }

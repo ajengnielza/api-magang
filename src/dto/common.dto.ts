@@ -34,8 +34,8 @@ export class ListQueryDto {
   @Type(() => Number)
   @IsInt({ message: "limit harus berupa bilangan bulat" })
   @Min(1, { message: "limit minimal 1" })
-  @Max(1000000, { message: "limit maksimal 1000000" })
-  limit: number = 10;
+ @Max(100, { message: "limit maksimal 100" })
+limit: number = 10;
 
   @IsOptional()
   @KeHurufBesar()

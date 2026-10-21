@@ -9,8 +9,6 @@ import {
 import {
   buatJurnal, getJurnalById, getSemuaJurnal, hapusJurnal, updateJurnal, updateStatusReview,
 } from "../controllers/jurnal.controller";
-
-
 const router = Router();
 
 router.post("/", authGuard, validasi(CreateJurnalDto), buatJurnal);
