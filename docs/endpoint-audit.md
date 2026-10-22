@@ -54,3 +54,27 @@
 | DELETE | /jurnal/:id | - | - | IdParamDto |
 
 Endpoint tanpa input: GET /stats, GET /stats/per-peserta, GET /health, GET /health/ready.
+
+| Method | Path | Test |
+|---|---|---|
+| POST | /auth/register | kontrak-api, tambahan-api |
+| POST | /auth/login | kontrak-api, tambahan-api, rate-limit |
+| POST | /auth/refresh | tambahan-api |
+| POST | /auth/logout | tambahan-api |
+| GET | /me | kontrak-api, tambahan-api |
+| PATCH | /me | kontrak-api, tambahan-api |
+| GET | /me/jurnal | tambahan-api |
+| GET | /peserta | tambahan-api |
+| GET | /peserta/:id | kontrak-api |
+| GET | /peserta/:id/jurnal | **belum ada** |
+| PATCH | /peserta/:id | tambahan-api |
+| DELETE | /peserta/:id | tambahan-api |
+| GET | /jurnal | kontrak-api, produksi |
+| GET | /jurnal/:id | **belum ada** |
+| POST | /jurnal | kontrak-api, tambahan-api |
+| PATCH | /jurnal/:id | tambahan-api |
+| PATCH | /jurnal/:id/review | tambahan-api |
+| DELETE | /jurnal/:id | tambahan-api |
+| GET | /stats, /stats/per-peserta | **belum ada** (butuh database, Jumat) |
+| GET | /health | tambahan-api |
+| GET | /health/ready | **belum ada** (butuh database, Jumat) |

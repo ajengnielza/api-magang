@@ -260,3 +260,11 @@ Versi yang lebih sehat memeriksa hasil yang dikembalikan:
 
 Pengecualian yang saya pertahankan: expect(repo.save).not.toHaveBeenCalled() saat email
 duplikat, karena "tidak menyimpan" adalah efek penting, bukan detail cara kerja.
+
+### Hasil Uji Sabotase
+
+1. **Sabotase role:** Setelah pembatasan role mentor dihapus, test `403 FORBIDDEN jika peserta mengakses daftar jurnal` gagal karena respons menjadi 500, bukan 403. File route kemudian dipulihkan.
+
+2. **Sabotase Response DTO:** Saat serialisasi DTO diubah, test gagal dijalankan karena terjadi kesalahan TypeScript: fungsi `serialisasi` membutuhkan dua argumen. Controller kemudian dipulihkan. Pengujian ini belum membuktikan test keamanan password gagal saat dieksekusi.
+
+3. **Sabotase authGuard:** Setelah error JWT dibungkus ulang menjadi `UNAUTHORIZED`, test `INVALID_TOKEN` dan `TOKEN_EXPIRED` gagal karena kode error tidak sesuai kontrak. Middleware kemudian dipulihkan.
