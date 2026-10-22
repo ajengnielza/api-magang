@@ -244,3 +244,19 @@ Eksperimen A: Menghapus MaxLength(72) pada password membuat test "password 73 ka
 Eksperimen B: Menghapus MaxLength(100) pada sekolah awalnya tidak membuat test gagal karena batas tersebut belum diuji. Setelah test "sekolah 101 karakter" ditambahkan, penghapusan decorator dapat terdeteksi.
 
 Kesimpulan: Test tidak cukup hanya lulus. Test juga harus mampu mendeteksi ketika aturan validasi yang seharusnya ada dihapus.
+
+## Refleksi Minggu 15: Menguji "Apa" bukan "Bagaimana"
+
+Menguji "apa yang terjadi" berarti memeriksa hasil dan efek pentingnya, misalnya
+ConflictError dilempar dan data tidak disimpan. Menguji "bagaimana caranya" berarti
+memeriksa langkah internal, misalnya query tepat apa yang dikirim ke repository.
+
+Contoh test saya yang menguji detail berlebihan:
+  expect(repo.findByIdDenganJurnal).toHaveBeenCalledWith(1);   // pada getJurnalMilikPeserta
+Test ini patah kalau nama method repository diganti, padahal perilaku service sama.
+
+Versi yang lebih sehat memeriksa hasil yang dikembalikan:
+  expect(hasil).toEqual({ pesertaId: 1, nama: "Budi", jurnal: [...] });
+
+Pengecualian yang saya pertahankan: expect(repo.save).not.toHaveBeenCalled() saat email
+duplikat, karena "tidak menyimpan" adalah efek penting, bukan detail cara kerja.
