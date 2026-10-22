@@ -1,0 +1,4 @@
+#	Gejala	Penyebab	Perbaikan	Test yang menjaga
+1	Pesan 404 berbunyi “...tidak ditemukan tidak ditemukan” (verifikasi dulu dengan perintah di bagian Temuan)	NotFoundError sudah menambah kata itu, tapi service menulis kalimat lengkap	Berikan hanya bagian depannya: new NotFoundError(\Peserta dengan id ${id}`)`	pesan error menyebut id dan tidak mengulang...
+2	Pemeriksaan kepemilikan dilewati kalau userId tidak diberikan (if (userId && ...))	Parameter userId? opsional. Controller memang selalu mengirimnya setelah authGuard, tapi service tidak melindungi dirinya sendiri	Jadikan userId wajib (angka) dan ubah controller memakai req.user!.id	Belum ada. Tulis test “tanpa userId ditolak” dulu, lihat gagal, baru ubah kodenya
+3	expiresAt refresh token ditulis tetap 7 hari di kode, sementara JWT_REFRESH_EXPIRES_IN bisa berbeda	Dua sumber kebenaran untuk masa berlaku yang sama	Turunkan dari satu konfigurasi	Test “tepat 7 hari” mengunci perilaku sekarang
