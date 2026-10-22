@@ -1,101 +1,50 @@
-import { pesertaRepository } from "../repositories/peserta.repository";
-import { NotFoundError, ValidationError, ForbiddenError, FieldError, pilihField } from "../utils";
-import { AppDataSource } from "../config/database.config";
-import { Peserta } from "../entities/Peserta.entity";
-import { ListQuery } from "../utils/pagination";
-import { UpdateProfilDto } from "../dto/peserta.dto";
+import type { UpdateProfilDto } from "../dto/peserta.dto";
+import type { pesertaRepository } from "../repositories/peserta.repository";
+import { NotFoundError, ValidationError } from "../utils/AppError";
+import { hanyaYangDiisi } from "../utils/hanyaYangDiisi";
+import type { ListQuery } from "../utils/pagination";
 
-const FIELD_UBAH_PESERTA = ["nama", "sekolah", "telepon"] as const;
+// Tipe repository diambil dari objek aslinya. "import type" menghapus import ini saat runtime,
+// jadi file ini TIDAK ikut memuat AppDataSource.
+export type PesertaRepo = typeof pesertaRepository;
 
-function hanyaYangDiisi<T extends object>(data: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, nilai]) => nilai !== undefined)
-  ) as Partial<T>;
-}
-
-export const pesertaService = {
-  async getAll(filter: { sekolah?: string; fase?: string; limit?: string }) {
-    let hasil = filter.sekolah
-      ? await pesertaRepository.findBySekolah(filter.sekolah)
-      : await pesertaRepository.findAll();
-
-    if (filter.fase) hasil = hasil.filter((p) => p.fase === Number(filter.fase));
-    if (filter.limit) hasil = hasil.slice(0, Number(filter.limit));
-    return hasil;
-  },
+export class PesertaService {
+  // Repository DISUNTIKKAN dari luar, bukan diambil sendiri dari AppDataSource
+  constructor(private readonly repo: PesertaRepo) {}
 
   async getById(id: number) {
-    const peserta = await pesertaRepository.findById(id);
-    if (!peserta) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
+    const peserta = await this.repo.findById(id);
+    if (!peserta) throw new NotFoundError(`Peserta dengan id ${id}`);
     return peserta;
-  },
+  }
 
   async getJurnalMilikPeserta(id: number) {
-    const peserta = await AppDataSource.getRepository(Peserta).findOne({
-      where: { id },
-      relations: { jurnalList: true },
-    });
-
-    if (!peserta) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
-
+    const peserta = await this.repo.findByIdDenganJurnal(id);
+    if (!peserta) throw new NotFoundError(`Peserta dengan id ${id}`);
     return { pesertaId: id, nama: peserta.nama, jurnal: peserta.jurnalList };
-  },
-
-  async create(payload: { nama: string; sekolah: string; email: string; fase?: number }) {
-    const errors: FieldError[] = [];
-    if (!payload.nama) errors.push({ field: "nama", pesan: "Nama wajib diisi" });
-    if (!payload.sekolah) errors.push({ field: "sekolah", pesan: "Sekolah wajib diisi" });
-
-    if (errors.length > 0) {
-      throw new ValidationError(errors);
-    }
-
-    return pesertaRepository.create({
-      nama: payload.nama,
-      sekolah: payload.sekolah,
-      email: payload.email,
-      fase: Number(payload.fase) || 1,
-    });
-  },
-
-  async update(id: number, body: unknown, userId?: number) {
-  if (userId && id !== userId) {
-    throw new ForbiddenError("Kamu tidak bisa mengubah data peserta lain");
   }
-
-  const perubahan = pilihField(body, FIELD_UBAH_PESERTA);
-  if (Object.keys(perubahan).length === 0) {
-    throw new ValidationError([
-      { field: "body", pesan: `Isi minimal satu field: ${FIELD_UBAH_PESERTA.join(", ")}` },
-    ]);
-  }
-
-    const updated = await pesertaRepository.update(id, perubahan as Partial<Peserta>);
-    if (!updated) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
-    return updated;
-  },
-
-  async delete(id: number) {
-    const berhasil = await pesertaRepository.delete(id);
-    if (!berhasil) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
-  },
 
   async getProfilSaya(userId: number) {
     return this.getById(userId);
-  },
-
-  async daftarPeserta(lq: ListQuery, filter: { sekolah?: string; fase?: number }) {
-    return pesertaRepository.findPaginated(lq, filter);
-  },
-
-  async ubahProfil(id: number, data: UpdateProfilDto) {
-  const perubahan = hanyaYangDiisi(data);
-  if (Object.keys(perubahan).length === 0) {
-    throw new ValidationError([{ field: "body", pesan: "Minimal satu field harus diisi" }]);
   }
 
-  const updated = await pesertaRepository.update(id, perubahan);
-  if (!updated) throw new NotFoundError(`Peserta dengan id ${id} tidak ditemukan`);
-  return updated;
-},
-};
+  async daftarPeserta(lq: ListQuery, filter: { sekolah?: string; fase?: number }) {
+    return this.repo.findPaginated(lq, filter);
+  }
+
+  async ubahProfil(id: number, data: UpdateProfilDto) {
+    const perubahan = hanyaYangDiisi(data);
+    if (Object.keys(perubahan).length === 0) {
+      throw new ValidationError([{ field: "body", pesan: "Minimal satu field harus diisi" }]);
+    }
+
+    const updated = await this.repo.update(id, perubahan);
+    if (!updated) throw new NotFoundError(`Peserta dengan id ${id}`);
+    return updated;
+  }
+
+  async delete(id: number) {
+    const berhasil = await this.repo.delete(id);
+    if (!berhasil) throw new NotFoundError(`Peserta dengan id ${id}`);
+  }
+}

@@ -83,4 +83,8 @@ export const pesertaRepository = {
     .where("p.email = :email", { email })
     .getOne();
 },
+
+async findByIdDenganJurnal(id: number): Promise<Peserta | null> {
+  return repo.findOne({ where: { id }, relations: { jurnalList: true } });
+},
 };

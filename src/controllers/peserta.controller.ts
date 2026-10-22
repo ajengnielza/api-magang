@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { pesertaService } from "../services/peserta.service";
+import { pesertaService } from "../services";
 import { asyncHandler, sukses, suksesDenganMeta, serialisasi } from "../utils";
 import { buatMeta } from "../utils/pagination";
 import { ambilDto } from "../middlewares/validasi.middleware";

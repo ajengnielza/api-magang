@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { authService } from "../services/auth.service";
+import { authService } from "../services";
 import { asyncHandler, sukses, dibuat, serialisasi } from "../utils";
 import { ambilDto } from "../middlewares/validasi.middleware";
 import { RegisterDto, LoginDto, RefreshTokenDto } from "../dto/auth.dto";

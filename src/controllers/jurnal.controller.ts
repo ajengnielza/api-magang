@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { jurnalService } from "../services/jurnal.service";
+import { jurnalService } from "../services";
 import { asyncHandler, sukses, suksesDenganMeta, suksesDenganTotal, dibuat, serialisasi } from "../utils";
 import { buatMeta } from "../utils/pagination";
 import { ambilDto } from "../middlewares/validasi.middleware";
