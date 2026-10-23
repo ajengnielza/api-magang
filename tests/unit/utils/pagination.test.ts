@@ -91,3 +91,7 @@ describe("escapeLike", () => {
     expect(escapeLike("budi santoso")).toBe("budi santoso");
   });
 });
+
+it("memanggil buatMeta tanpa memeriksa apa pun", () => {
+  buatMeta(1, 10, 25);
+});

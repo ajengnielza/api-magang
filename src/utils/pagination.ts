@@ -23,3 +23,4 @@ export function buatMeta(page: number, limit: number, total: number): Pagination
 export function escapeLike(teks: string): string {
   return teks.replace(/[\\%_]/g, "\\$&");
 }
+
