@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { JurnalHarian } from "./Jurnal.entity";
+
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity("mentor")
 export class Mentor {
@@ -14,7 +14,4 @@ export class Mentor {
 
   @Column({ type: "jsonb" })
   keahlian!: string[];
-
-  @OneToMany(() => JurnalHarian, (jurnal) => jurnal.reviewer)
-  jurnalDireview!: JurnalHarian[];
 }

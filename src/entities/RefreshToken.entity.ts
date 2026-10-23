@@ -9,9 +9,9 @@ export class RefreshToken {
   @Column({ type: "varchar" })
   token!: string;
 
-  @ManyToOne(() => Peserta)
-  @JoinColumn({ name: "peserta_id" })
-  peserta!: Peserta;
+  @ManyToOne(() => Peserta, { onDelete: "CASCADE" })
+@JoinColumn({ name: "peserta_id" })
+peserta!: Peserta;
 
   @Column({ name: "peserta_id" })
   pesertaId!: number;

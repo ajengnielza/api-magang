@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+
+import {
+  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn,
+} from "typeorm";
 import { Peserta } from "./Peserta.entity";
-import { Mentor } from "./Mentor.entity";
 
 export type StatusReview = "belum" | "disetujui" | "revisi";
 
@@ -16,12 +18,12 @@ export class JurnalHarian {
   @Column({ name: "peserta_id" })
   pesertaId!: number;
 
-  @ManyToOne(() => Mentor, (mentor) => mentor.jurnalDireview, { nullable: true })
+  @ManyToOne(() => Peserta, { nullable: true })
   @JoinColumn({ name: "reviewer_id" })
-  reviewer?: Mentor;
+  reviewer?: Peserta;
 
   @Column({ name: "reviewer_id", nullable: true })
-  reviewerId?: number;
+  reviewerId?: number | null;
 
   @Column({ type: "text" })
   kegiatan!: string;
@@ -32,7 +34,11 @@ export class JurnalHarian {
   @Column({ type: "varchar", nullable: true })
   linkCommit?: string;
 
-  @Column({ type: "enum", enum: ["belum", "disetujui", "revisi"], default: "belum" })
+  @Column({
+    type: "enum",
+    enum: ["belum", "disetujui", "revisi"],
+    default: "belum",
+  })
   statusReview!: StatusReview;
 
   @Column({ type: "text", nullable: true })
