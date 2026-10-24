@@ -18,3 +18,19 @@
 - Bug nomor 5: test Response DTO terakhir berhasil.
 - Bug nomor 6: perubahan pada `authGuard` merupakan **sabotase pengujian**, bukan bukti bahwa kode produksi saat ini masih memiliki bug. Setelah sabotase, file middleware dipulihkan.
 
+# Catatan Bug — Minggu 15
+
+## Hasil Investigasi Bug
+
+| # | Gejala | Penyebab | Perbaikan | Test yang mencegah kembalinya |
+|---|---|---|---|---|
+| 1 | Pesan error login untuk email tidak terdaftar dan password salah berbeda. | Pesan pada cabang email tidak ditemukan dan password tidak cocok tidak konsisten. | Gunakan pesan `Email atau password salah` pada kedua kondisi agar informasi autentikasi tidak dibedakan. | `tests/unit/services/auth.service.test.ts` — `pesan error email salah dan password salah SAMA persis` |
+| 2 | Respons API mengirim properti `password` yang seharusnya tidak ditampilkan. | Opsi `excludeExtraneousValues: true` pada fungsi serialisasi dihilangkan. | Pertahankan `excludeExtraneousValues: true` dan pastikan DTO respons hanya mengekspos properti yang diizinkan. | `tests/http/kontrak-api.test.ts` — `password tidak pernah ikut keluar walau service mengembalikannya` |
+
+## Catatan Sesi Suntik Bug
+
+Sebanyak 10 bug diuji pada sesi Suntik Bug. Berdasarkan hasil pengujian, 10 dari 10 bug berhasil dideteksi setelah Bug 7 dan Bug 9 diuji ulang dengan benar.
+
+Bug yang diuji meliputi pagination, batas limit, validasi DTO, middleware autentikasi dan role, penerjemahan error PostgreSQL, konsistensi pesan login, serialisasi respons, validasi mass assignment, serta penghapusan refresh token saat logout.
+
+File dipulihkan menggunakan `git restore` setelah setiap pengujian. Pengujian ulang menunjukkan file terkait kembali lulus.

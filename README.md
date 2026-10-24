@@ -268,3 +268,54 @@ duplikat, karena "tidak menyimpan" adalah efek penting, bukan detail cara kerja.
 2. **Sabotase Response DTO:** Saat serialisasi DTO diubah, test gagal dijalankan karena terjadi kesalahan TypeScript: fungsi `serialisasi` membutuhkan dua argumen. Controller kemudian dipulihkan. Pengujian ini belum membuktikan test keamanan password gagal saat dieksekusi.
 
 3. **Sabotase authGuard:** Setelah error JWT dibungkus ulang menjadi `UNAUTHORIZED`, test `INVALID_TOKEN` dan `TOKEN_EXPIRED` gagal karena kode error tidak sesuai kontrak. Middleware kemudian dipulihkan.
+
+## Cara Menjalankan Test
+
+Prasyarat: Node.js dan PostgreSQL yang berjalan.
+
+1. `npm install`
+2. Buat database test: `psql -U postgres -c "CREATE DATABASE magang_test;"`
+3. Salin `.env.test.example` menjadi `.env.test`, lalu isi `DB_PASSWORD`
+
+| Perintah | Fungsi |
+|---|---|
+| `npm test` | Unit test dan test HTTP (tanpa database) |
+| `npm run test:int` | Integration test (butuh `magang_test`, menjalankan migration dan TRUNCATE) |
+| `npm run test:coverage` | Laporan coverage di `coverage/lcov-report/index.html` |
+
+Pengaman: integration test menolak berjalan jika nama database tidak berakhiran `_test`.
+
+## Cara Menjalankan Test
+
+Prasyarat: Node.js dan PostgreSQL berjalan.
+
+1. Instal dependensi dengan `npm install`.
+2. Buat database pengujian bernama `magang_test` jika belum tersedia.
+3. Salin `.env.test.example` menjadi `.env.test`, lalu isi konfigurasi database termasuk `DB_PASSWORD`.
+
+| Perintah | Fungsi |
+|---|---|
+| `npm test` | Menjalankan unit test dan test HTTP. |
+| `npm run test:int` | Menjalankan integration test; memerlukan database pengujian dan dapat menjalankan migration serta `TRUNCATE`. |
+| `npm run test:coverage` | Menjalankan test dengan laporan coverage. |
+
+**Peringatan:** Jalankan integration test hanya terhadap database khusus pengujian. Pastikan konfigurasi menolak nama database yang tidak berakhiran `_test` sebelum test dijalankan.
+
+## Hasil Sesi Suntik Bug
+
+Sesi Suntik Bug menguji 10 perubahan yang sengaja merusak perilaku aplikasi. Hasil akhir: 10 dari 10 bug terdeteksi. Setelah setiap pengujian, file dipulihkan dan test terkait dijalankan kembali.
+
+## Catatan Coverage
+
+Lengkapi bagian ini berdasarkan laporan `npm run test:coverage` yang sebenarnya:
+
+- File coverage rendah 1: [nama file dan persentase]
+- File coverage rendah 2: [nama file dan persentase]
+- File coverage rendah 3: [nama file dan persentase]
+- File yang mendapat test tambahan: [nama file]
+- Hasil akhir coverage statements: [persentase aktual]
+
+## Hasil Sabotase Integrasi
+
+- Sabotase A: [perubahan yang dilakukan, test yang gagal, dan hasil setelah pemulihan]
+- Sabotase B: [perubahan yang dilakukan, test yang gagal, dan hasil setelah pemulihan]
