@@ -23,8 +23,16 @@ export const config = {
     refreshSecret: process.env.JWT_REFRESH_SECRET!,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   },
+
   cors: {
   origins: (process.env.CORS_ORIGINS || "http://localhost:5173").split(","),
+  },
+  
+  docs: {
+  // Aktif di development, MATI di production kecuali sengaja dinyalakan
+  enabled:
+    (process.env.DOCS_ENABLED ??
+      (process.env.NODE_ENV === "production" ? "false" : "true")) === "true",
 },
 };
 

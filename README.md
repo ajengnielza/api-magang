@@ -319,3 +319,31 @@ Lengkapi bagian ini berdasarkan laporan `npm run test:coverage` yang sebenarnya:
 
 - Sabotase A: [perubahan yang dilakukan, test yang gagal, dan hasil setelah pemulihan]
 - Sabotase B: [perubahan yang dilakukan, test yang gagal, dan hasil setelah pemulihan]
+
+## — Dokumen Mentah OpenAPI
+
+File `/api/docs.json` berisi spesifikasi OpenAPI yang menjelaskan
+informasi API, base URL, kategori endpoint, dan daftar paths.
+Swagger UI membaca spesifikasi tersebut untuk menampilkan dokumentasi
+API dalam bentuk halaman interaktif. Jadi, JSON merupakan data
+spesifikasi, sedangkan Swagger UI merupakan tampilan visualnya.
+
+## — Uji Jebakan CSP
+
+Saya memindahkan middleware Helmet global sebelum pendaftaran Swagger UI
+dan menonaktifkan opsi CSP-bypass pada middleware khusus Swagger.
+Setelah halaman dimuat ulang, Swagger UI tetap tampil lengkap dan tidak
+ditemukan pesan error pada Console. Hasil pengujian menunjukkan bahwa
+tidak terlihat gangguan pada Swagger UI dalam kondisi yang diuji.
+Setelah pengujian, konfigurasi dikembalikan seperti semula.
+
+## — OpenAPI dan Swagger
+
+OpenAPI adalah spesifikasi standar untuk menjelaskan struktur dan cara
+kerja sebuah API, sedangkan Swagger adalah kumpulan tools untuk membuat,
+melihat, dan menguji dokumentasi API berdasarkan spesifikasi tersebut.
+Dokumentasi API tetap diperlukan meskipun semua kode ditulis sendiri
+agar endpoint, parameter, dan respons lebih mudah dipahami.
+Dokumentasi juga membantu developer lain menggunakan API tanpa harus
+membaca seluruh kode sumber. Dengan demikian, pengembangan, pengujian,
+dan pemeliharaan API menjadi lebih terarah.
