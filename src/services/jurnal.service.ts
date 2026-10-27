@@ -14,9 +14,20 @@ export class JurnalService {
     return this.repo.findByPeserta(userId);
   }
 
-  async getById(id: number) {
+  async getById(id: number, userId?: number, userRole?: Role) {
     const jurnal = await this.repo.findById(id);
-    if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id}`);
+
+    if (!jurnal) {
+      throw new NotFoundError(`Jurnal dengan id ${id}`);
+    }
+
+    if (
+      userRole !== "mentor" &&
+      (userId === undefined || jurnal.pesertaId !== userId)
+    ) {
+      throw new ForbiddenError("Kamu tidak berhak mengakses jurnal ini");
+    }
+
     return jurnal;
   }
 
@@ -35,7 +46,10 @@ export class JurnalService {
     const jurnal = await this.repo.findById(id);
     if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id}`);
 
-    if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
+    if (
+      userRole !== "mentor" &&
+      (userId === undefined || jurnal.pesertaId !== userId)
+    ) {
       throw new ForbiddenError("Kamu tidak berhak mengubah jurnal ini");
     }
 
@@ -63,7 +77,10 @@ export class JurnalService {
     const jurnal = await this.repo.findById(id);
     if (!jurnal) throw new NotFoundError(`Jurnal dengan id ${id}`);
 
-    if (userId && userRole !== "mentor" && jurnal.pesertaId !== userId) {
+    if (
+      userRole !== "mentor" &&
+      (userId === undefined || jurnal.pesertaId !== userId)
+    ) {
       throw new ForbiddenError("Kamu tidak berhak menghapus jurnal ini");
     }
 

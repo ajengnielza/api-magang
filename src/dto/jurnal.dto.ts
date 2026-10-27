@@ -1,21 +1,7 @@
 
 import { Type } from "class-transformer";
 import {
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsDateString,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-  ValidateIf,
-  ValidateNested,
+  ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString, IsUrl, Max, MaxLength, Min, MinLength, ValidateIf, ValidateNested,
 } from "class-validator";
 import { ListQueryDto } from "./common.dto";
 import { KeBoolean, Trim } from "./decorators/transform";

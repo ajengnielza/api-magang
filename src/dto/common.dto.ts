@@ -1,14 +1,7 @@
 
 import { Type } from "class-transformer";
 import {
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Max,
-  MaxLength,
-  Min,
+  IsIn, IsInt, IsOptional, IsString, IsUrl, Max, MaxLength, Min,
 } from "class-validator";
 import { KeHurufBesar, Trim } from "./decorators/transform";
 

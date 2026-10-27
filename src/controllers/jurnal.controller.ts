@@ -26,9 +26,15 @@ export const getJurnalSaya = asyncHandler(async (req: Request, res: Response) =>
   suksesDenganTotal(res, serialisasi(JurnalResponseDto, hasil));
 });
 
-export const getJurnalById = asyncHandler(async (req: Request, res: Response) => {
+export const getJurnalById = asyncHandler(async (req, res) => {
   const { id } = ambilDto<IdParamDto>(req, "params");
-  const jurnal = await jurnalService.getById(id);
+
+  const jurnal = await jurnalService.getById(
+    id,
+    req.user?.id,
+    req.user?.role
+  );
+
   sukses(res, serialisasi(JurnalResponseDto, jurnal));
 });
 
