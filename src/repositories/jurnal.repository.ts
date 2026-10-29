@@ -1,7 +1,7 @@
 
 import { AppDataSource } from "../config/database.config";
 import { JurnalHarian } from "../entities/Jurnal.entity";
-import { FindOptionsOrder, FindOptionsWhere, Between, MoreThanOrEqual, LessThanOrEqual, Not  } from "typeorm";
+import { FindOptionsOrder, FindOptionsWhere, Between, MoreThanOrEqual, LessThanOrEqual, Not, LessThan  } from "typeorm";
 import { ListQuery } from "../utils/pagination";
 
 export const SORT_JURNAL = ["createdAt", "statusReview"] as const;
@@ -62,13 +62,23 @@ export const jurnalRepository = {
         where.statusReview = Not("belum") as any;
     }
 
-    if (filter.from && filter.to) {
-      where.createdAt = Between(new Date(filter.from), new Date(filter.to));
-    } else if (filter.from) {
-      where.createdAt = MoreThanOrEqual(new Date(filter.from));
-    } else if (filter.to) {
-      where.createdAt = LessThanOrEqual(new Date(filter.to));
-    }
+   if (filter.from && filter.to) {
+  const awal = new Date(filter.from);
+  const akhirEksklusif = new Date(filter.to);
+  akhirEksklusif.setUTCDate(akhirEksklusif.getUTCDate() + 1);
+
+  where.createdAt = Between(
+    awal,
+    new Date(akhirEksklusif.getTime() - 1),
+  );
+} else if (filter.from) {
+  where.createdAt = MoreThanOrEqual(new Date(filter.from));
+} else if (filter.to) {
+  const akhirEksklusif = new Date(filter.to);
+  akhirEksklusif.setUTCDate(akhirEksklusif.getUTCDate() + 1);
+
+  where.createdAt = LessThan(akhirEksklusif);
+}
 
     const [data, total] = await repo.findAndCount({
       where,

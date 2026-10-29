@@ -151,20 +151,47 @@ export const components = {
       },
     },
 
-    Lampiran: {
+      Lampiran: {
       type: "object",
       required: ["url"],
-      additionalProperties: false,
       properties: {
-        url: {
-          type: "string",
-          format: "uri",
-          maxLength: 500,
-        },
-        keterangan: {
-          type: "string",
-          maxLength: 200,
-        },
+        url: { type: "string", format: "uri", maxLength: 500, example: "https://contoh.com/screenshot.png" },
+        keterangan: { type: "string", maxLength: 200, example: "Hasil npm test" },
+      },
+    },
+
+    Jurnal: {
+      type: "object",
+      properties: {
+        id: { type: "integer", example: 12 },
+        pesertaId: { type: "integer", example: 3 },
+        reviewerId: { type: "integer", nullable: true, description: "Id mentor yang me-review, null jika belum" },
+        kegiatan: { type: "string", example: "Belajar unit testing dengan Jest dan Supertest" },
+        hambatan: { type: "string", nullable: true },
+        linkCommit: { type: "string", nullable: true },
+        statusReview: { type: "string", enum: ["belum", "disetujui", "revisi"], example: "belum" },
+        catatanMentor: { type: "string", nullable: true, description: "Terisi saat status disetujui atau revisi" },
+        lampiran: { type: "array", nullable: true, items: { $ref: "#/components/schemas/Lampiran" } },
+        createdAt: { type: "string", format: "date-time" },
+      },
+    },
+
+    JurnalResponse: {
+      type: "object",
+      properties: {
+        sukses: { type: "boolean", example: true },
+        pesan: { type: "string", example: "Berhasil" },
+        data: { $ref: "#/components/schemas/Jurnal" },
+      },
+    },
+
+    JurnalListResponse: {
+      type: "object",
+      properties: {
+        sukses: { type: "boolean", example: true },
+        pesan: { type: "string", example: "Berhasil" },
+        data: { type: "array", items: { $ref: "#/components/schemas/Jurnal" } },
+        meta: { $ref: "#/components/schemas/PaginationMeta" },
       },
     },
 
@@ -172,174 +199,53 @@ export const components = {
       type: "object",
       required: ["kegiatan"],
       additionalProperties: false,
+      description: "pesertaId TIDAK dikirim lewat body: diambil dari token. Mengirimnya menghasilkan 422.",
       properties: {
-        kegiatan: {
-          type: "string",
-          minLength: 10,
-          maxLength: 2000,
-        },
-        hambatan: {
-          type: "string",
-          maxLength: 2000,
-        },
-        linkCommit: {
-          type: "string",
-          format: "uri",
-          maxLength: 500,
-        },
-        lampiran: {
-          type: "array",
-          maxItems: 5,
-          items: {
-            $ref: "#/components/schemas/Lampiran",
-          },
-        },
+        kegiatan: { type: "string", minLength: 10, maxLength: 2000 },
+        hambatan: { type: "string", maxLength: 2000 },
+        linkCommit: { type: "string", format: "uri", maxLength: 500 },
+        lampiran: { type: "array", maxItems: 5, items: { $ref: "#/components/schemas/Lampiran" } },
       },
     },
 
     UpdateJurnalRequest: {
       type: "object",
       additionalProperties: false,
+      minProperties: 1,
+      description:
+        "Hanya kegiatan, hambatan, dan linkCommit yang boleh diubah. " +
+        "Lampiran, pesertaId, dan statusReview tidak bisa diubah lewat endpoint ini (422).",
       properties: {
-        kegiatan: {
-          type: "string",
-          minLength: 10,
-          maxLength: 2000,
-        },
-        hambatan: {
-          type: "string",
-          maxLength: 2000,
-        },
-        linkCommit: {
-          type: "string",
-          format: "uri",
-          maxLength: 500,
-        },
+        kegiatan: { type: "string", minLength: 10, maxLength: 2000 },
+        hambatan: { type: "string", maxLength: 2000 },
+        linkCommit: { type: "string", format: "uri", maxLength: 500 },
       },
     },
 
-    
-      ReviewJurnalRequest: {
-        type: "object",
-        required: ["statusReview"],
-        additionalProperties: false,
-        properties: {
-          statusReview: {
-            type: "string",
-            enum: ["belum", "disetujui", "revisi"],
-            description: "Status review jurnal oleh mentor",
-          },
-          catatan: {
-            type: "string",
-            minLength: 5,
-            maxLength: 1000,
-            description:
-              "Catatan mentor. Wajib diisi jika statusReview bukan belum.",
+    ReviewJurnalRequest: {
+      oneOf: [
+        {
+          type: "object",
+          title: "Disetujui atau perlu revisi (catatan wajib)",
+          required: ["statusReview", "catatan"],
+          additionalProperties: false,
+          properties: {
+            statusReview: { type: "string", enum: ["disetujui", "revisi"] },
+            catatan: { type: "string", minLength: 5, maxLength: 1000, example: "Sudah bagus, lanjutkan." },
           },
         },
-      },
-
-      LampiranResponse: {
-        type: "object",
-        required: ["url"],
-        properties: {
-          url: {
-            type: "string",
-            format: "uri",
-          },
-          keterangan: {
-            type: "string",
-            nullable: true,
+        {
+          type: "object",
+          title: "Dikembalikan ke belum direview (catatan diabaikan)",
+          required: ["statusReview"],
+          additionalProperties: false,
+          properties: {
+            statusReview: { type: "string", enum: ["belum"] },
+            catatan: { type: "string", description: "Boleh dikirim, tetapi diabaikan dan catatan mentor dikosongkan" },
           },
         },
-      },
-
-      Jurnal: {
-        type: "object",
-        required: [
-          "id",
-          "pesertaId",
-          "kegiatan",
-          "statusReview",
-          "createdAt",
-        ],
-        properties: {
-          id: {
-            type: "integer",
-            example: 1,
-          },
-          pesertaId: {
-            type: "integer",
-            example: 1,
-          },
-          reviewerId: {
-            type: "integer",
-            nullable: true,
-            example: null,
-          },
-          kegiatan: {
-            type: "string",
-            example: "Mempelajari dokumentasi OpenAPI",
-          },
-          hambatan: {
-            type: "string",
-            nullable: true,
-            example: "Masih memahami struktur schema",
-          },
-          linkCommit: {
-            type: "string",
-            format: "uri",
-            nullable: true,
-          },
-          statusReview: {
-            type: "string",
-            enum: ["belum", "disetujui", "revisi"],
-            example: "belum",
-          },
-          catatanMentor: {
-            type: "string",
-            nullable: true,
-          },
-          lampiran: {
-            type: "array",
-            nullable: true,
-            items: {
-              $ref: "#/components/schemas/LampiranResponse",
-            },
-          },
-          createdAt: {
-            type: "string",
-            format: "date-time",
-            example: "2026-10-27T08:00:00.000Z",
-          },
-        },
-      },
-
-      JurnalResponse: bungkusSukses(ref("Jurnal")),
-
-      JurnalListResponse: bungkusDaftar(ref("Jurnal")),
-
-      JurnalListWithTotalResponse: {
-        type: "object",
-        properties: {
-          sukses: {
-            type: "boolean",
-            example: true,
-          },
-          pesan: {
-            type: "string",
-            example: "Berhasil",
-          },
-          total: {
-            type: "integer",
-            example: 2,
-          },
-          data: {
-            type: "array",
-            items: ref("Jurnal"),
-          },
-        },
-      },
+      ],
+    },
 
     // Pembungkus: bentuk response sukses
     PesertaResponse: bungkusSukses(ref("Peserta")),

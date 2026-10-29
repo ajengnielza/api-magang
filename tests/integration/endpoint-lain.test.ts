@@ -1,8 +1,13 @@
 import request from "supertest";
 import app from "../../src/app";
 import {
-  bersihkanDatabase, buatAkun, buatJurnal, siapkanDatabase, tutupDatabase,
+  bersihkanDatabase,
+  buatAkun,
+  buatJurnal,
+  siapkanDatabase,
+  tutupDatabase,
 } from "../helpers/db";
+import { bearer, tokenPeserta } from "../helpers/token";
 
 describe("endpoint lain di database sungguhan", () => {
   beforeAll(siapkanDatabase);
@@ -13,7 +18,10 @@ describe("endpoint lain di database sungguhan", () => {
     const res = await request(app).get("/api/v1/health/ready");
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ status: "ready", database: "up" });
+    expect(res.body).toMatchObject({
+      status: "ready",
+      database: "up",
+    });
   });
 
   it("GET /peserta/:id/jurnal memuat jurnal lewat relasi", async () => {
@@ -29,18 +37,28 @@ describe("endpoint lain di database sungguhan", () => {
   });
 
   it("GET /peserta/:id/jurnal: 404 jika peserta tidak ada", async () => {
-    expect((await request(app).get("/api/v1/peserta/9999/jurnal")).status).toBe(404);
+    const res = await request(app).get("/api/v1/peserta/9999/jurnal");
+
+    expect(res.status).toBe(404);
   });
 
   it("GET /jurnal/:id mengembalikan jurnal, dan 404 jika tidak ada", async () => {
     const p = await buatAkun("a@mail.com");
     const j = await buatJurnal(p.id);
+    const auth = bearer(tokenPeserta(p.id));
 
-    const ada = await request(app).get(`/api/v1/jurnal/${j.id}`);
+    const ada = await request(app)
+      .get(`/api/v1/jurnal/${j.id}`)
+      .set("Authorization", auth);
+
     expect(ada.status).toBe(200);
     expect(ada.body.data.id).toBe(j.id);
 
-    expect((await request(app).get("/api/v1/jurnal/9999")).status).toBe(404);
+    const tidakAda = await request(app)
+      .get("/api/v1/jurnal/9999")
+      .set("Authorization", auth);
+
+    expect(tidakAda.status).toBe(404);
   });
 
   it("GET /stats menghitung dari data nyata", async () => {
@@ -54,7 +72,10 @@ describe("endpoint lain di database sungguhan", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toMatchObject({
-      totalPeserta: 2, totalJurnal: 3, jurnalBelumDireview: 2, rataRataJurnalPerPeserta: 1.5,
+      totalPeserta: 2,
+      totalJurnal: 3,
+      jurnalBelumDireview: 2,
+      rataRataJurnalPerPeserta: 1.5,
     });
   });
 
@@ -68,9 +89,19 @@ describe("endpoint lain di database sungguhan", () => {
     const res = await request(app).get("/api/v1/stats/per-peserta");
 
     expect(res.status).toBe(200);
+
     const hitung = Object.fromEntries(
-      res.body.data.map((r: { pesertaId: number; totalJurnal: string }) => [r.pesertaId, Number(r.totalJurnal)])
+      res.body.data.map(
+        (r: { pesertaId: number; totalJurnal: string }) => [
+          r.pesertaId,
+          Number(r.totalJurnal),
+        ],
+      ),
     );
-    expect(hitung).toEqual({ [a.id]: 2, [b.id]: 1 });
+
+    expect(hitung).toEqual({
+      [a.id]: 2,
+      [b.id]: 1,
+    });
   });
 });

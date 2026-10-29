@@ -1,6 +1,7 @@
 import swaggerJSDoc from "swagger-jsdoc";
 import { isProd } from "../config/env.config";
 import { components } from "./components";
+import { resolve } from "path";
 
 export const spec = swaggerJSDoc({
   failOnErrors: true, // anotasi YAML rusak = error saat start, bukan peringatan yang terabaikan
@@ -21,10 +22,13 @@ export const spec = swaggerJSDoc({
       { name: "Peserta", description: "Pengelolaan data peserta" },
       { name: "Jurnal", description: "Jurnal harian dan proses review mentor" },
       { name: "Sistem", description: "Health check" },
+      { name: "Statistik", description: "Ringkasan data" },
     ],
     components: components,
      security: [{ bearerAuth: [] }],
   },
   // Lokasi file yang dipindai untuk mencari komentar @openapi
-  apis: isProd ? ["./dist/routes/*.js"] : ["./src/routes/*.ts"],
+apis: [
+  "./src/routes/*.routes.ts",
+],
 }) as Record<string, unknown>;

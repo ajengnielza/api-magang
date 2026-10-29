@@ -114,19 +114,32 @@ router.get(
  * /peserta/{id}/jurnal:
  *   get:
  *     tags: [Peserta]
- *     summary: Melihat jurnal peserta
- *     description: Mengambil jurnal berdasarkan ID peserta. Route ini tidak memasang authGuard.
+ *     summary: Jurnal milik satu peserta
+ *     description: |
+ *       Saat ini publik (tanpa login) dan menampilkan seluruh jurnal peserta tersebut.
+ *       Dibaca lewat relasi peserta ke jurnal.
+ *     security: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: ID peserta.
+ *       - $ref: '#/components/parameters/IdPath'
  *     responses:
  *       '200':
- *         description: Jurnal peserta berhasil diambil.
+ *         description: Id, nama, dan daftar jurnal peserta
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sukses: { type: boolean, example: true }
+ *                 pesan: { type: string, example: Berhasil }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     pesertaId: { type: integer, example: 3 }
+ *                     nama: { type: string, example: Budi Santoso }
+ *                     jurnal:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Jurnal'
  *       '404':
  *         $ref: '#/components/responses/NotFound'
  *       '422':
