@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { authGuard } from "../middlewares/auth.middleware";
 import { requireRole } from "../middlewares/role.middleware";
@@ -16,9 +15,11 @@ const router = Router();
  * @openapi
  * /peserta:
  *   get:
- *     tags: [Peserta]
+ *     tags:
+ *       - Peserta
  *     summary: Melihat daftar peserta
- *     description: Mengambil daftar peserta dengan pagination, pencarian, dan filter. Endpoint ini tidak memasang authGuard pada route.
+ *     description: Mengambil daftar peserta dengan pagination, pencarian, dan filter. Endpoint ini bersifat publik.
+ *     security: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -84,9 +85,11 @@ router.get(
  * @openapi
  * /peserta/{id}:
  *   get:
- *     tags: [Peserta]
+ *     tags:
+ *       - Peserta
  *     summary: Melihat detail peserta
- *     description: Mengambil detail peserta berdasarkan ID. Route ini tidak memasang authGuard.
+ *     description: Mengambil detail peserta berdasarkan ID. Endpoint ini bersifat publik.
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -113,7 +116,8 @@ router.get(
  * @openapi
  * /peserta/{id}/jurnal:
  *   get:
- *     tags: [Peserta]
+ *     tags:
+ *       - Peserta
  *     summary: Jurnal milik satu peserta
  *     description: |
  *       Saat ini publik (tanpa login) dan menampilkan seluruh jurnal peserta tersebut.
@@ -129,13 +133,21 @@ router.get(
  *             schema:
  *               type: object
  *               properties:
- *                 sukses: { type: boolean, example: true }
- *                 pesan: { type: string, example: Berhasil }
+ *                 sukses:
+ *                   type: boolean
+ *                   example: true
+ *                 pesan:
+ *                   type: string
+ *                   example: Berhasil
  *                 data:
  *                   type: object
  *                   properties:
- *                     pesertaId: { type: integer, example: 3 }
- *                     nama: { type: string, example: Budi Santoso }
+ *                     pesertaId:
+ *                       type: integer
+ *                       example: 3
+ *                     nama:
+ *                       type: string
+ *                       example: Budi Santoso
  *                     jurnal:
  *                       type: array
  *                       items:
@@ -155,9 +167,12 @@ router.get(
  * @openapi
  * /peserta/{id}:
  *   patch:
- *     tags: [Peserta]
+ *     tags:
+ *       - Peserta
  *     summary: Memperbarui data peserta
  *     description: Mengubah data peserta berdasarkan ID. Hanya pengguna yang sudah login dengan role mentor yang diizinkan.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -187,8 +202,6 @@ router.get(
  *         $ref: '#/components/responses/NotFound'
  *       '422':
  *         $ref: '#/components/responses/ValidationError'
- *     security:
- *       - bearerAuth: []
  */
 router.patch(
   "/:id",
@@ -203,9 +216,12 @@ router.patch(
  * @openapi
  * /peserta/{id}:
  *   delete:
- *     tags: [Peserta]
+ *     tags:
+ *       - Peserta
  *     summary: Menghapus peserta
  *     description: Menghapus data peserta berdasarkan ID. Hanya pengguna yang sudah login dengan role mentor yang diizinkan.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -225,8 +241,6 @@ router.patch(
  *         $ref: '#/components/responses/NotFound'
  *       '422':
  *         $ref: '#/components/responses/ValidationError'
- *     security:
- *       - bearerAuth: []
  */
 router.delete(
   "/:id",

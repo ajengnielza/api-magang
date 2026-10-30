@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { validasi } from "../middlewares/validasi.middleware";
@@ -44,7 +43,11 @@ const router = Router();
  *       '422':
  *         $ref: '#/components/responses/ValidationError'
  */
-router.post("/register", validasi(RegisterDto), authController.register);
+router.post(
+  "/register",
+  validasi(RegisterDto),
+  authController.register
+);
 
 /**
  * @openapi
@@ -165,7 +168,7 @@ router.post(
  *                   type: string
  *                   example: Logout berhasil
  *                 data:
- *                   type: 'null'
+ *                   nullable: true
  *                   example: null
  *       '422':
  *         $ref: '#/components/responses/ValidationError'

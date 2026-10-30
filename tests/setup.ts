@@ -6,3 +6,4 @@ process.env.DB_USER = "test";
 process.env.DB_PASSWORD = "test";
 process.env.JWT_SECRET = "secret-khusus-test";
 process.env.JWT_REFRESH_SECRET = "refresh-khusus-test";
+process.env.DOCS_ENABLED = "true";

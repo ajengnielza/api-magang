@@ -23,16 +23,16 @@ describe("JurnalService", () => {
       await expect(service.getJurnalSaya(1)).resolves.toEqual([jurnalMilikDewi]);
     });
 
-    it("getById mengembalikan jurnal jika ada", async () => {
-      repo.findById.mockResolvedValue(jurnalMilikDewi);
+    it("getById mengembalikan jurnal jika ada dan dimiliki user", async () => {
+  repo.findById.mockResolvedValue(jurnalMilikDewi);
 
-      await expect(service.getById(5)).resolves.toEqual(jurnalMilikDewi);
-    });
+  await expect(service.getById(5, 1, "peserta")).resolves.toEqual(jurnalMilikDewi);
+ });
 
     it("getById melempar NotFoundError dengan pesan yang benar jika tidak ada", async () => {
       repo.findById.mockResolvedValue(null);
 
-      const err = (await tangkapError(service.getById(99))) as Error;
+      const err = (await tangkapError(service.getById(99, 1, "peserta"))) as Error;
 
       expect(err).toBeInstanceOf(NotFoundError);
       expect(err.message).toBe("Jurnal dengan id 99 tidak ditemukan");
