@@ -105,8 +105,8 @@ describe("Dokumen tidak menyimpang dari kode", () => {
 
 // Aktifkan setelah Langkah 2: dokumen sudah diekspor.
 describe("Berkas ekspor", () => {
-  it.skip(
-    "docs/openapi.json sama dengan dokumen saat ini (jalankan npm run docs:export jika gagal)",
+ it(
+  "docs/openapi.json sama dengan dokumen saat ini (jalankan npm run docs:export jika gagal)",
     () => {
       const berkas = JSON.parse(
         fs.readFileSync(

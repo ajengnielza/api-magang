@@ -8,14 +8,15 @@ export const spec = swaggerJSDoc({
     openapi: "3.0.3",
 
     info: {
-      title: "API Magang Batch 4",
-      version: "1.0.0",
-      description:
-        "REST API untuk program magang PT Nawasena Insan Permata.\n\n" +
-        "Semua endpoint berada di bawah `/api/v1`. Format response sukses dan error " +
-        "seragam; setiap response membawa header `X-Request-Id` untuk pelacakan log.",
-    },
-
+    title: "API Magang Batch 4",
+    version: "1.0.0",
+    description:
+      "REST API untuk program magang PT Nawasena Insan Permata.\n\n" +
+      "Semua endpoint berada di bawah `/api/v1`. Format response sukses dan error " +
+      "seragam; setiap response membawa header `X-Request-Id` untuk pelacakan log.\n\n" +
+      "Akun mentor tidak dibuat melalui API. Untuk development, " +
+      "akun mentor dibuat menggunakan perintah `npm run seed:mentor`.",
+},
     servers: [
       {
         url: "/api/v1",

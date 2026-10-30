@@ -348,3 +348,38 @@ Dokumentasi juga membantu developer lain menggunakan API tanpa harus
 membaca seluruh kode sumber. Dengan demikian, pengembangan, pengujian,
 dan pemeliharaan API menjadi lebih terarah.
 
+### Pengujian Ketahanan Dokumentasi OpenAPI
+
+Dilakukan empat percobaan sabotase untuk memastikan test dokumentasi dapat mendeteksi kesalahan:
+
+1. Menghapus `summary` pada salah satu endpoint menyebabkan test konvensi dokumentasi gagal.
+2. Menghapus respons `401` pada endpoint yang memerlukan autentikasi menyebabkan test konvensi dokumentasi gagal.
+3. Mengubah `$ref` menjadi referensi yang tidak tersedia menyebabkan validasi OpenAPI gagal.
+4. Menambahkan nilai `sudah` pada enum `statusReview` menyebabkan dua test kesesuaian enum gagal.
+
+Seluruh perubahan sabotase telah dikembalikan dan test dokumentasi kembali berhasil.
+
+**Kesimpulan:** test dokumentasi membantu menjaga kelengkapan anotasi, validitas spesifikasi OpenAPI, serta kesesuaian dokumentasi dengan kode program.
+
+### Pengujian Postman
+
+Dokumen OpenAPI berhasil diimpor ke Postman melalui file
+`docs/openapi.json`.
+
+Collection berhasil dibuat berdasarkan endpoint yang
+terdokumentasi. Pengujian request dilakukan menggunakan
+base URL `http://localhost:3000/api/v1`.
+
+## Dokumentasi API
+
+Swagger UI tersedia di:
+
+http://localhost:3000/api/docs/
+
+Spesifikasi OpenAPI tersedia melalui:
+
+http://localhost:3000/api/docs.json
+
+File spesifikasi yang dapat diimpor ke Postman:
+
+`docs/openapi.json`
