@@ -3,7 +3,7 @@
   "info": {
     "title": "API Magang Batch 4",
     "version": "1.0.0",
-    "description": "REST API untuk program magang PT Nawasena Insan Permata.\n\nSemua endpoint berada di bawah `/api/v1`. Format response sukses dan error seragam; setiap response membawa header `X-Request-Id` untuk pelacakan log."
+    "description": "REST API untuk program magang PT Nawasena Insan Permata.\n\nSemua endpoint berada di bawah `/api/v1`. Format response sukses dan error seragam; setiap response membawa header `X-Request-Id` untuk pelacakan log.\n\nAkun mentor tidak dibuat melalui API. Untuk development, akun mentor dibuat menggunakan perintah `npm run seed:mentor`."
   },
   "servers": [
     {
@@ -113,6 +113,14 @@
     "schemas": {
       "PaginationMeta": {
         "type": "object",
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "totalPages",
+          "hasNext",
+          "hasPrev"
+        ],
         "properties": {
           "page": {
             "type": "integer",
@@ -142,6 +150,10 @@
       },
       "FieldError": {
         "type": "object",
+        "required": [
+          "field",
+          "pesan"
+        ],
         "properties": {
           "field": {
             "type": "string",
@@ -156,6 +168,11 @@
       },
       "ErrorResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "error",
+          "requestId"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",
@@ -192,6 +209,11 @@
                 "items": {
                   "$ref": "#/components/schemas/FieldError"
                 }
+              },
+              "debug": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Informasi tambahan yang hanya tersedia di development"
               }
             }
           },
@@ -203,6 +225,18 @@
       },
       "Peserta": {
         "type": "object",
+        "required": [
+          "id",
+          "nama",
+          "sekolah",
+          "email",
+          "fase",
+          "status",
+          "role",
+          "telepon",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
           "id": {
             "type": "integer",
@@ -249,6 +283,11 @@
             "example": "081234567890"
           },
           "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
             "readOnly": true
@@ -374,6 +413,18 @@
       },
       "Jurnal": {
         "type": "object",
+        "required": [
+          "id",
+          "pesertaId",
+          "reviewerId",
+          "kegiatan",
+          "hambatan",
+          "linkCommit",
+          "statusReview",
+          "catatanMentor",
+          "lampiran",
+          "createdAt"
+        ],
         "properties": {
           "id": {
             "type": "integer",
@@ -429,6 +480,11 @@
       },
       "JurnalResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "pesan",
+          "data"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",
@@ -445,6 +501,12 @@
       },
       "JurnalListResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "pesan",
+          "data",
+          "meta"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",
@@ -568,6 +630,11 @@
       },
       "PesertaResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "pesan",
+          "data"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",
@@ -584,6 +651,12 @@
       },
       "PesertaListResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "pesan",
+          "data",
+          "meta"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",
@@ -606,6 +679,11 @@
       },
       "LoginResponse": {
         "type": "object",
+        "required": [
+          "sukses",
+          "pesan",
+          "data"
+        ],
         "properties": {
           "sukses": {
             "type": "boolean",

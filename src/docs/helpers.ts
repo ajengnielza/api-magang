@@ -6,6 +6,7 @@ export const ref = (nama: string) => ({
 // Pembungkus response sukses tunggal
 export const bungkusSukses = (data: object) => ({
   type: "object",
+  required: ["sukses", "pesan", "data"],
   properties: {
     sukses: { type: "boolean", example: true },
     pesan: { type: "string", example: "Berhasil" },
@@ -16,6 +17,7 @@ export const bungkusSukses = (data: object) => ({
 // Pembungkus response daftar
 export const bungkusDaftar = (item: object) => ({
   type: "object",
+  required: ["sukses", "pesan", "data", "meta"],
   properties: {
     sukses: { type: "boolean", example: true },
     pesan: { type: "string", example: "Berhasil" },

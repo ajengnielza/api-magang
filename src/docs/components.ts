@@ -34,57 +34,86 @@ export const components = {
 
   schemas: {
     PaginationMeta: {
-      type: "object",
-      properties: {
-        page: { type: "integer", example: 1 },
-        limit: { type: "integer", example: 10 },
-        total: { type: "integer", example: 42 },
-        totalPages: { type: "integer", example: 5 },
-        hasNext: { type: "boolean", example: true },
-        hasPrev: { type: "boolean", example: false },
-      },
-    },
+  type: "object",
+  required: ["page", "limit", "total", "totalPages", "hasNext", "hasPrev"],
+  properties: {
+    page: { type: "integer", example: 1 },
+    limit: { type: "integer", example: 10 },
+    total: { type: "integer", example: 42 },
+    totalPages: { type: "integer", example: 5 },
+    hasNext: { type: "boolean", example: true },
+    hasPrev: { type: "boolean", example: false },
+  },
+},
 
     FieldError: {
-      type: "object",
-      properties: {
-        field: { type: "string", example: "email", description: "Nama field; notasi titik untuk objek bersarang (lampiran.1.url)" },
-        pesan: { type: "string", example: "Format email tidak valid" },
-      },
+    type: "object",
+    required: ["field", "pesan"],
+    properties: {
+    field: {
+      type: "string",
+      example: "email",
+      description: "Nama field; notasi titik untuk objek bersarang (lampiran.1.url)",
     },
+    pesan: { type: "string", example: "Format email tidak valid" },
+  },
+},
 
     ErrorResponse: {
+  type: "object",
+  required: ["sukses", "error", "requestId"],
+  properties: {
+    sukses: { type: "boolean", example: false },
+    error: {
       type: "object",
+      required: ["kode", "pesan"],
       properties: {
-        sukses: { type: "boolean", example: false },
-        error: {
-          type: "object",
-          required: ["kode", "pesan"],
-          properties: {
-            // Diambil langsung dari kode aplikasi: otomatis sinkron dengan ErrorCode
-            kode: { type: "string", enum: Object.values(ErrorCode) },
-            pesan: { type: "string" },
-            detail: { type: "array", items: ref("FieldError") },
-          },
+        kode: {
+          type: "string",
+          enum: Object.values(ErrorCode),
         },
-        requestId: { type: "string", format: "uuid" },
+        pesan: { type: "string" },
+        detail: {
+          type: "array",
+          items: ref("FieldError"),
+        },
+        debug: {
+          type: "object",
+          additionalProperties: true,
+          description: "Informasi tambahan yang hanya tersedia di development",
+        },
       },
     },
-
+    requestId: { type: "string", format: "uuid" },
+  },
+},
     Peserta: {
-      type: "object",
-      properties: {
-        id: { type: "integer", readOnly: true, example: 1 },
-        nama: { type: "string", example: "Budi Santoso" },
-        sekolah: { type: "string", example: "SMK 5 Malang" },
-        email: { type: "string", format: "email", example: "budi@mail.com" },
-        fase: { type: "integer", minimum: 1, maximum: 5, example: 1 },
-        status: { type: "string", enum: ["aktif", "lulus", "berhenti"] },
-        role: { type: "string", enum: ["peserta", "mentor"] },
-        telepon: { type: "string", nullable: true, example: "081234567890" },
-        createdAt: { type: "string", format: "date-time", readOnly: true },
-      },
-    },
+  type: "object",
+  required: [
+    "id",
+    "nama",
+    "sekolah",
+    "email",
+    "fase",
+    "status",
+    "role",
+    "telepon",
+    "createdAt",
+    "updatedAt",
+  ],
+  properties: {
+    id: { type: "integer", readOnly: true, example: 1 },
+    nama: { type: "string", example: "Budi Santoso" },
+    sekolah: { type: "string", example: "SMK 5 Malang" },
+    email: { type: "string", format: "email", example: "budi@mail.com" },
+    fase: { type: "integer", minimum: 1, maximum: 5, example: 1 },
+    status: { type: "string", enum: ["aktif", "lulus", "berhenti"] },
+    role: { type: "string", enum: ["peserta", "mentor"] },
+    telepon: { type: "string", nullable: true, example: "081234567890" },
+    createdAt: { type: "string", format: "date-time", readOnly: true },
+    updatedAt: { type: "string", format: "date-time", readOnly: true },
+  },
+},
 
     RegisterRequest: {
       type: "object",
@@ -161,39 +190,75 @@ export const components = {
     },
 
     Jurnal: {
-      type: "object",
-      properties: {
-        id: { type: "integer", example: 12 },
-        pesertaId: { type: "integer", example: 3 },
-        reviewerId: { type: "integer", nullable: true, description: "Id mentor yang me-review, null jika belum" },
-        kegiatan: { type: "string", example: "Belajar unit testing dengan Jest dan Supertest" },
-        hambatan: { type: "string", nullable: true },
-        linkCommit: { type: "string", nullable: true },
-        statusReview: { type: "string", enum: ["belum", "disetujui", "revisi"], example: "belum" },
-        catatanMentor: { type: "string", nullable: true, description: "Terisi saat status disetujui atau revisi" },
-        lampiran: { type: "array", nullable: true, items: { $ref: "#/components/schemas/Lampiran" } },
-        createdAt: { type: "string", format: "date-time" },
-      },
+  type: "object",
+  required: [
+    "id",
+    "pesertaId",
+    "reviewerId",
+    "kegiatan",
+    "hambatan",
+    "linkCommit",
+    "statusReview",
+    "catatanMentor",
+    "lampiran",
+    "createdAt",
+  ],
+  properties: {
+    id: { type: "integer", example: 12 },
+    pesertaId: { type: "integer", example: 3 },
+    reviewerId: {
+      type: "integer",
+      nullable: true,
+      description: "Id mentor yang me-review, null jika belum",
     },
+    kegiatan: {
+      type: "string",
+      example: "Belajar unit testing dengan Jest dan Supertest",
+    },
+    hambatan: { type: "string", nullable: true },
+    linkCommit: { type: "string", nullable: true },
+    statusReview: {
+      type: "string",
+      enum: ["belum", "disetujui", "revisi"],
+      example: "belum",
+    },
+    catatanMentor: {
+      type: "string",
+      nullable: true,
+      description: "Terisi saat status disetujui atau revisi",
+    },
+    lampiran: {
+      type: "array",
+      nullable: true,
+      items: ref("Lampiran"),
+    },
+    createdAt: { type: "string", format: "date-time" },
+  },
+},
 
     JurnalResponse: {
-      type: "object",
-      properties: {
-        sukses: { type: "boolean", example: true },
-        pesan: { type: "string", example: "Berhasil" },
-        data: { $ref: "#/components/schemas/Jurnal" },
-      },
-    },
+  type: "object",
+  required: ["sukses", "pesan", "data"],
+  properties: {
+    sukses: { type: "boolean", example: true },
+    pesan: { type: "string", example: "Berhasil" },
+    data: ref("Jurnal"),
+  },
+},
 
-    JurnalListResponse: {
-      type: "object",
-      properties: {
-        sukses: { type: "boolean", example: true },
-        pesan: { type: "string", example: "Berhasil" },
-        data: { type: "array", items: { $ref: "#/components/schemas/Jurnal" } },
-        meta: { $ref: "#/components/schemas/PaginationMeta" },
-      },
+JurnalListResponse: {
+  type: "object",
+  required: ["sukses", "pesan", "data", "meta"],
+  properties: {
+    sukses: { type: "boolean", example: true },
+    pesan: { type: "string", example: "Berhasil" },
+    data: {
+      type: "array",
+      items: ref("Jurnal"),
     },
+    meta: ref("PaginationMeta"),
+  },
+},
 
     CreateJurnalRequest: {
       type: "object",
