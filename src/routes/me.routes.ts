@@ -36,6 +36,22 @@ router.get("/", authGuard, getProfilSaya);
  *     responses:
  *       '200':
  *         description: Daftar jurnal berhasil diambil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [sukses, pesan, total, data]
+ *               properties:
+ *                 sukses:
+ *                   type: boolean
+ *                 pesan:
+ *                   type: string
+ *                 total:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Jurnal'
  *       '401':
  *         $ref: '#/components/responses/Unauthorized'
  */
