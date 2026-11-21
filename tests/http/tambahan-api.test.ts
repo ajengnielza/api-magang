@@ -148,14 +148,31 @@ describe("endpoint /me memakai identitas dari token", () => {
     expect(res.body.data).not.toHaveProperty("password");
   });
 
-  it("GET /me/jurnal memakai id dari token", async () => {
-    jest.mocked(jurnalService.getJurnalSaya).mockResolvedValue([] as never);
+ it("GET /me/jurnal memakai id dari token dan mengembalikan meta", async () => {
+  jest.mocked(jurnalService.daftarJurnal).mockResolvedValue({
+    data: [],
+    total: 0,
+  } as never);
 
-    const res = await request(app).get("/api/v1/me/jurnal").set("Authorization", bearer(tokenPeserta(5)));
+  const res = await request(app)
+    .get("/api/v1/me/jurnal")
+    .set("Authorization", bearer(tokenPeserta(5)));
 
-    expect(res.status).toBe(200);
-    expect(jurnalService.getJurnalSaya).toHaveBeenCalledWith(5);
+  expect(res.status).toBe(200);
+
+  expect(jurnalService.daftarJurnal).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      pesertaId: 5,
+    })
+  );
+
+  expect(res.body.meta).toMatchObject({
+    page: 1,
+    limit: 10,
+    total: 0,
   });
+});
 
   it("PATCH /me 200 dan hanya field sah yang diteruskan", async () => {
     jest.mocked(pesertaService.ubahProfil).mockResolvedValue({ id: 5, nama: "Dewi Lestari" } as never);
@@ -247,24 +264,93 @@ describe("endpoint peserta", () => {
   });
 });
 
-describe("endpoint jurnal", () => {
-  it("POST /jurnal 201: pesertaId dari token dan Location menunjuk jurnal baru", async () => {
-    jest.mocked(jurnalService.create).mockResolvedValue({
-      id: 12, pesertaId: 3, kegiatan: "Belajar supertest dengan mock service", statusReview: "belum",
+
+describe("endpoint /me memakai identitas dari token", () => {
+  it("GET /me memakai id dari token dan tidak membocorkan password", async () => {
+    jest.mocked(pesertaService.getProfilSaya).mockResolvedValue({
+      id: 5,
+      nama: "Dewi",
+      password: "HASH_RAHASIA",
     } as never);
 
     const res = await request(app)
-      .post("/api/v1/jurnal")
-      .set("Authorization", bearer(tokenPeserta(3)))
-      .send({ kegiatan: "Belajar supertest dengan mock service" });
+      .get("/api/v1/me")
+      .set("Authorization", bearer(tokenPeserta(5)));
 
-    expect(res.status).toBe(201);
-    expect(res.headers.location).toBe("/api/v1/jurnal/12");
-    expect(jurnalService.create).toHaveBeenCalledWith(
-      3,
-      expect.objectContaining({ kegiatan: "Belajar supertest dengan mock service" })
+    expect(res.status).toBe(200);
+    expect(pesertaService.getProfilSaya).toHaveBeenCalledWith(5);
+    expect(res.body.data).not.toHaveProperty("password");
+  });
+
+  it("GET /me/jurnal memakai id dari token dan mengembalikan meta", async () => {
+    jest.mocked(jurnalService.daftarJurnal).mockResolvedValue({
+      data: [],
+      total: 0,
+    } as never);
+
+    const res = await request(app)
+      .get("/api/v1/me/jurnal")
+      .set("Authorization", bearer(tokenPeserta(5)));
+
+    expect(res.status).toBe(200);
+
+    expect(jurnalService.daftarJurnal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        page: 1,
+        limit: 10,
+      }),
+      expect.objectContaining({
+        pesertaId: 5,
+      })
+    );
+
+    expect(res.body.meta).toMatchObject({
+      page: 1,
+      limit: 10,
+      total: 0,
+    });
+  });
+
+  it("GET /me/jurnal mengabaikan pesertaId dari query", async () => {
+    jest.mocked(jurnalService.daftarJurnal).mockResolvedValue({
+      data: [],
+      total: 0,
+    } as never);
+
+    const res = await request(app)
+      .get("/api/v1/me/jurnal")
+      .query({ pesertaId: 99 })
+      .set("Authorization", bearer(tokenPeserta(5)));
+
+    expect(res.status).toBe(200);
+
+    expect(jurnalService.daftarJurnal).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        pesertaId: 5,
+      })
     );
   });
+
+  it("PATCH /me 200 dan hanya field sah yang diteruskan", async () => {
+    jest.mocked(pesertaService.ubahProfil).mockResolvedValue({
+      id: 5,
+      nama: "Dewi Lestari",
+    } as never);
+
+    const res = await request(app)
+      .patch("/api/v1/me")
+      .set("Authorization", bearer(tokenPeserta(5)))
+      .send({ nama: "  Dewi Lestari  " });
+
+    expect(res.status).toBe(200);
+    expect(pesertaService.ubahProfil).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ nama: "Dewi Lestari" })
+    );
+  });
+});
+
 
   it("POST /jurnal dengan pesertaId di body: 422 dan service tidak dipanggil", async () => {
     const res = await request(app)
@@ -299,7 +385,7 @@ describe("endpoint jurnal", () => {
     expect(res.status).toBe(204);
     expect(jurnalService.delete).toHaveBeenCalledWith(1, 1, "peserta");
   });
-});
+
 
 describe("PATCH /jurnal/:id/review", () => {
   const review = { statusReview: "revisi", catatan: "Tolong perjelas bagian hambatan" };

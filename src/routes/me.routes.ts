@@ -7,7 +7,8 @@ import {
 } from "../controllers/peserta.controller";
 import { getJurnalSaya } from "../controllers/jurnal.controller";
 import { UpdateProfilDto } from "../dto/peserta.dto";
-import { validasi } from "../middlewares";
+import { validasi, validasi as validasiMiddleware } from "../middlewares";
+import { ListJurnalQueryDto } from "../dto/jurnal.dto";
 
 const router = Router();
 
@@ -31,31 +32,41 @@ router.get("/", authGuard, getProfilSaya);
  * /me/jurnal:
  *   get:
  *     tags: [Profil]
- *     summary: Melihat jurnal sendiri
- *     description: Mengambil daftar jurnal milik pengguna yang sedang login. Access token wajib disertakan.
+ *     summary: Daftar jurnal milik sendiri
+ *     description: Berpagination. Identitas peserta diambil dari access token, bukan dari parameter query.
+ *     parameters:
+ *       - $ref: '#/components/parameters/Page'
+ *       - $ref: '#/components/parameters/Limit'
+ *       - $ref: '#/components/parameters/Order'
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, statusReview]
+ *           default: createdAt
+ *       - in: query
+ *         name: statusReview
+ *         schema:
+ *           type: string
+ *           enum: [belum, disetujui, revisi]
  *     responses:
  *       '200':
- *         description: Daftar jurnal berhasil diambil
+ *         description: Jurnal milik pengguna yang sedang login
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               required: [sukses, pesan, total, data]
- *               properties:
- *                 sukses:
- *                   type: boolean
- *                 pesan:
- *                   type: string
- *                 total:
- *                   type: integer
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Jurnal'
+ *               $ref: '#/components/schemas/JurnalListResponse'
  *       '401':
  *         $ref: '#/components/responses/Unauthorized'
+ *       '422':
+ *         $ref: '#/components/responses/ValidationError'
  */
-router.get("/jurnal", authGuard, getJurnalSaya);
+router.get(
+  "/jurnal",
+  authGuard,
+  validasi(ListJurnalQueryDto, "query"),
+  getJurnalSaya
+);
 
 /**
  * @openapi

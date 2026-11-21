@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { jurnalService } from "../services";
-import { asyncHandler, sukses, suksesDenganMeta, suksesDenganTotal, dibuat, serialisasi } from "../utils";
+import { asyncHandler, sukses, suksesDenganMeta, dibuat, serialisasi } from "../utils";
 import { buatMeta } from "../utils/pagination";
 import { ambilDto } from "../middlewares/validasi.middleware";
 import { IdParamDto } from "../dto/common.dto";
@@ -22,8 +22,18 @@ export const getSemuaJurnal = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const getJurnalSaya = asyncHandler(async (req: Request, res: Response) => {
-  const hasil = await jurnalService.getJurnalSaya(req.user!.id);
-  suksesDenganTotal(res, serialisasi(JurnalResponseDto, hasil));
+  const query = ambilDto<ListJurnalQueryDto>(req, "query");
+
+  const { data, total } = await jurnalService.daftarJurnal(query, {
+    pesertaId: req.user!.id,
+    statusReview: query.statusReview,
+  });
+
+  suksesDenganMeta(
+    res,
+    serialisasi(JurnalResponseDto, data),
+    buatMeta(query.page, query.limit, total)
+  );
 });
 
 export const getJurnalById = asyncHandler(async (req, res) => {

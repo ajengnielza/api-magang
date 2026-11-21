@@ -315,14 +315,22 @@ JurnalListResponse: {
     // Pembungkus: bentuk response sukses
     PesertaResponse: bungkusSukses(ref("Peserta")),
     PesertaListResponse: bungkusDaftar(ref("Peserta")),
+    
     LoginResponse: bungkusSukses({
-      type: "object",
-      properties: {
-        accessToken: { type: "string", description: "Berlaku 15 menit" },
-        refreshToken: { type: "string", description: "Berlaku 7 hari, tukarkan di /auth/refresh" },
-        peserta: ref("Peserta"),
+    type: "object",
+    required: ["accessToken", "refreshToken", "peserta"],
+    properties: {
+      accessToken: {
+        type: "string",
       },
-    }),
+      refreshToken: {
+        type: "string",
+      },
+      peserta: {
+        $ref: "#/components/schemas/Peserta",
+      },
+    },
+  }),
   },
 
   responses: {

@@ -45,7 +45,22 @@ describe("Dokumen tidak menyimpang dari kode", () => {
       parameter("/peserta", "sortBy")?.schema?.enum
     ).toEqual([...SORT_PESERTA]);
   });
+  
+    it.each(Object.entries(schemas))(
+    "schema %s: setiap properti required benar-benar ada di properties",
+    (_nama, skema) => {
+      const s = skema as {
+        required?: string[];
+        properties?: Record<string, unknown>;
+      };
 
+      const kunci = Object.keys(s.properties ?? {});
+
+      for (const wajib of s.required ?? []) {
+        expect(kunci).toContain(wajib);
+      }
+    }
+  );
   it("enum sortBy pada GET /jurnal sama dengan SORT_JURNAL", () => {
     expect(
       parameter("/jurnal", "sortBy")?.schema?.enum
