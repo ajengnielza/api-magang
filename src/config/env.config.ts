@@ -34,6 +34,11 @@ export const config = {
     (process.env.DOCS_ENABLED ??
       (process.env.NODE_ENV === "production" ? "false" : "true")) === "true",
 },
+cookie: {
+  secure:
+    (process.env.COOKIE_SECURE ??
+      (process.env.NODE_ENV === "production" ? "true" : "false")) === "true",
+},
 };
 
 export const isProd = config.app.env === "production";

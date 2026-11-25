@@ -1,9 +1,14 @@
+
 import "reflect-metadata";
 import request from "supertest";
 import app from "../../src/app";
 import { AppDataSource } from "../../src/config/database.config";
 import { Peserta } from "../../src/entities/Peserta.entity";
-import { bersihkanDatabase, siapkanDatabase, tutupDatabase } from "../helpers/db";
+import {
+  bersihkanDatabase,
+  siapkanDatabase,
+  tutupDatabase,
+} from "../helpers/db";
 
 describe("Alur autentikasi lengkap (database sungguhan)", () => {
   const akun = {
@@ -19,49 +24,77 @@ describe("Alur autentikasi lengkap (database sungguhan)", () => {
   afterAll(tutupDatabase);
 
   it("register, login, akses /me, tolak mass assignment, refresh, logout, refresh ditolak", async () => {
+    // Agent menyimpan cookie dari respons dan mengirimkannya otomatis.
+    const agent = request.agent(app);
+
     // 1. Register
-    const reg = await request(app).post("/api/v1/auth/register").send(akun);
+    const reg = await agent
+      .post("/api/v1/auth/register")
+      .send(akun);
+
     expect(reg.status).toBe(201);
     expect(reg.body.data).not.toHaveProperty("password");
 
     // 2. Login
-    const login = await request(app)
+    const login = await agent
       .post("/api/v1/auth/login")
       .send({ email: akun.email, password: akun.password });
+
     expect(login.status).toBe(200);
-    const { accessToken, refreshToken } = login.body.data;
+
+    const { accessToken } = login.body.data;
+
     expect(accessToken).toEqual(expect.any(String));
+    expect(login.body.data).not.toHaveProperty("refreshToken");
+    expect(login.headers["set-cookie"]).toBeDefined();
 
     // 3. Akses profil sendiri
-    const me = await request(app).get("/api/v1/me").set("Authorization", `Bearer ${accessToken}`);
+    const me = await agent
+      .get("/api/v1/me")
+      .set("Authorization", `Bearer ${accessToken}`);
+
     expect(me.status).toBe(200);
     expect(me.body.data.email).toBe(akun.email);
     expect(me.body.data).not.toHaveProperty("password");
 
-    // 4. Mass assignment ditolak DAN role di database tidak berubah
-    const nakal = await request(app)
+    // 4. Mass assignment ditolak dan role database tidak berubah
+    const nakal = await agent
       .patch("/api/v1/me")
       .set("Authorization", `Bearer ${accessToken}`)
       .send({ role: "mentor" });
+
     expect(nakal.status).toBe(422);
-    const dariDb = await AppDataSource.getRepository(Peserta).findOneByOrFail({ email: akun.email });
+
+    const dariDb = await AppDataSource
+      .getRepository(Peserta)
+      .findOneByOrFail({ email: akun.email });
+
     expect(dariDb.role).toBe("peserta");
 
-    // 5. Refresh berhasil
-    const refresh = await request(app).post("/api/v1/auth/refresh").send({ refreshToken });
+    // 5. Refresh menggunakan cookie
+    const refresh = await agent
+      .post("/api/v1/auth/refresh");
+
     expect(refresh.status).toBe(200);
     expect(refresh.body.data.accessToken).toEqual(expect.any(String));
 
-    // 6. Logout, lalu refresh token yang sama harus ditolak
-    const logout = await request(app).post("/api/v1/auth/logout").send({ refreshToken });
-    expect(logout.status).toBe(200);
+    // 6. Logout
+    const logout = await agent
+      .post("/api/v1/auth/logout");
 
-    const refreshLagi = await request(app).post("/api/v1/auth/refresh").send({ refreshToken });
+    expect(logout.status).toBe(204);
+
+    // 7. Refresh setelah logout harus ditolak
+    const refreshLagi = await agent
+      .post("/api/v1/auth/refresh");
+
     expect(refreshLagi.status).toBe(401);
   });
 
   it("menolak email duplikat walau beda huruf besar dan spasi (409)", async () => {
-    await request(app).post("/api/v1/auth/register").send(akun);
+    await request(app)
+      .post("/api/v1/auth/register")
+      .send(akun);
 
     const res = await request(app)
       .post("/api/v1/auth/register")

@@ -4,13 +4,19 @@ import { bungkusDaftar, bungkusSukses, contohError, ref, responsError } from "./
 
 export const components = {
   securitySchemes: {
-    bearerAuth: {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-      description: "Tempel access token dari POST /auth/login (tanpa kata Bearer).",
-    },
+  bearerAuth: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    description: "Tempel access token dari POST /auth/login (tanpa kata Bearer).",
   },
+  cookieAuth: {
+    type: "apiKey",
+    in: "cookie",
+    name: "refreshToken",
+    description: "Cookie httpOnly yang diset saat login. Tidak bisa dibaca JavaScript.",
+  },
+},
 
   parameters: {
     Page:  { name: "page", in: "query", description: "Nomor halaman (mulai 1)",
@@ -143,20 +149,6 @@ export const components = {
       },
     },
 
-    
-    RefreshRequest: {
-      type: "object",
-      required: ["refreshToken"],
-      additionalProperties: false,
-      properties: {
-        refreshToken: {
-          type: "string",
-          minLength: 1,
-          maxLength: 2048,
-          description: "Refresh token untuk mendapatkan access token baru",
-        },
-      },
-    },
 
     UpdateProfilRequest: {
       type: "object",
@@ -317,20 +309,28 @@ JurnalListResponse: {
     PesertaListResponse: bungkusDaftar(ref("Peserta")),
     
     LoginResponse: bungkusSukses({
-    type: "object",
-    required: ["accessToken", "refreshToken", "peserta"],
-    properties: {
-      accessToken: {
-        type: "string",
-      },
-      refreshToken: {
-        type: "string",
-      },
-      peserta: {
-        $ref: "#/components/schemas/Peserta",
-      },
+  type: "object",
+  required: ["accessToken", "peserta"],
+  properties: {
+    accessToken: {
+      type: "string",
     },
-  }),
+    peserta: {
+      $ref: "#/components/schemas/Peserta",
+    },
+  },
+}),
+
+RefreshResponse: bungkusSukses({
+  type: "object",
+  required: ["accessToken"],
+  properties: {
+    accessToken: {
+      type: "string",
+      description: "Access token baru hasil refresh",
+    },
+  },
+}),
   },
 
   responses: {

@@ -1,12 +1,9 @@
+
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { validasi } from "../middlewares/validasi.middleware";
 import { loginLimiter } from "../middlewares/rateLimiter.middleware";
-import {
-  RegisterDto,
-  LoginDto,
-  RefreshTokenDto,
-} from "../dto/auth.dto";
+import { RegisterDto, LoginDto } from "../dto/auth.dto";
 
 const router = Router();
 
@@ -43,11 +40,7 @@ const router = Router();
  *       '422':
  *         $ref: '#/components/responses/ValidationError'
  */
-router.post(
-  "/register",
-  validasi(RegisterDto),
-  authController.register
-);
+router.post("/register", validasi(RegisterDto), authController.register);
 
 /**
  * @openapi
@@ -56,7 +49,7 @@ router.post(
  *     tags:
  *       - Auth
  *     summary: Login peserta atau mentor
- *     description: Memverifikasi email dan password, lalu mengembalikan access token dan refresh token.
+ *     description: Memverifikasi email dan password. Access token dikembalikan melalui response body, sedangkan refresh token disimpan dalam HttpOnly Cookie.
  *     security: []
  *     requestBody:
  *       required: true
@@ -69,7 +62,13 @@ router.post(
  *             password: Rahasia123
  *     responses:
  *       '200':
- *         description: Login berhasil
+ *         description: Login berhasil. Refresh token dikirim melalui HttpOnly Cookie yang berlaku selama 7 hari.
+ *         headers:
+ *           Set-Cookie:
+ *             description: Cookie refreshToken dengan atribut HttpOnly, SameSite=Strict, Path=/api/v1/auth, dan Max-Age 7 hari.
+ *             schema:
+ *               type: string
+ *               example: refreshToken=token-rahasia; HttpOnly; SameSite=Strict; Path=/api/v1/auth; Max-Age=604800
  *         content:
  *           application/json:
  *             schema:
@@ -95,46 +94,20 @@ router.post(
  *     tags:
  *       - Auth
  *     summary: Memperbarui access token
- *     description: Menukar refresh token yang valid untuk mendapatkan access token baru.
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RefreshRequest'
- *           example:
- *             refreshToken: tempel_refresh_token_di_sini
+ *     description: Menggunakan refresh token dari HttpOnly Cookie untuk mendapatkan access token baru. Refresh token tidak dikirim melalui request body.
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       '200':
  *         description: Access token berhasil diperbarui
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 sukses:
- *                   type: boolean
- *                   example: true
- *                 pesan:
- *                   type: string
- *                   example: Berhasil
- *                 data:
- *                   type: object
- *                   properties:
- *                     accessToken:
- *                       type: string
- *                       description: Access token baru
+ *               $ref: '#/components/schemas/RefreshResponse'
  *       '401':
  *         $ref: '#/components/responses/Unauthorized'
- *       '422':
- *         $ref: '#/components/responses/ValidationError'
  */
-router.post(
-  "/refresh",
-  validasi(RefreshTokenDto),
-  authController.refresh
-);
+router.post("/refresh", authController.refresh);
 
 /**
  * @openapi
@@ -143,40 +116,19 @@ router.post(
  *     tags:
  *       - Auth
  *     summary: Logout pengguna
- *     description: Menghapus refresh token yang dikirimkan untuk mengakhiri sesi.
+ *     description: Menghapus refresh token dari database jika tersedia dan menghapus HttpOnly Cookie. Endpoint tetap berhasil meskipun cookie tidak dikirim.
  *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RefreshRequest'
- *           example:
- *             refreshToken: tempel_refresh_token_di_sini
+ *     parameters:
+ *       - name: refreshToken
+ *         in: cookie
+ *         required: false
+ *         description: HttpOnly Cookie yang dibuat saat login.
+ *         schema:
+ *           type: string
  *     responses:
- *       '200':
- *         description: Logout berhasil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 sukses:
- *                   type: boolean
- *                   example: true
- *                 pesan:
- *                   type: string
- *                   example: Logout berhasil
- *                 data:
- *                   nullable: true
- *                   example: null
- *       '422':
- *         $ref: '#/components/responses/ValidationError'
+ *       '204':
+ *         description: Logout berhasil. Cookie refreshToken dihapus.
  */
-router.post(
-  "/logout",
-  validasi(RefreshTokenDto),
-  authController.logout
-);
+router.post("/logout", authController.logout);
 
 export default router;
